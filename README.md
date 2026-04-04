@@ -126,9 +126,9 @@ Damit laesst sich leichter erkennen, ob ein Fehler aufgetreten ist:
 
 ## Veroeffentlichung Auf GitHub
 
-Vor der Veroeffentlichung musst du noch diese Platzhalter ersetzen:
+Vor der Veroeffentlichung sollten diese Punkte geprueft sein:
 
-- `YOUR_GITHUB_USER` in `manifest.json`
+- GitHub-Links in `manifest.json` zeigen auf dein echtes Repository
 
 Empfohlene GitHub-Einstellungen:
 
@@ -154,4 +154,4 @@ Das aktuelle Layout bleibt im Repository-Root und verwendet:
 
 ## Lizenz
 
-Aktuell ist noch keine Lizenzdatei enthalten. Wenn du das Repository oeffentlich veroeffentlichen willst, solltest du vorab eine passende Lizenz auswaehlen.
+Dieses Repository verwendet die MIT-Lizenz. Details stehen in [`LICENSE`](LICENSE).
