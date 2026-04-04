@@ -1,0 +1,205 @@
+{
+  "title": "Bose Preset Router",
+  "config": {
+    "initiate_flow": {
+      "reconfigure": "Edit global settings"
+    },
+    "step": {
+      "user": {
+        "title": "Bose Preset Router",
+        "description": "Choose how the integration should behave overall, including notifications, logging, and how carefully stream handoffs should be checked.",
+        "data": {
+          "notify_on_press": "Show a notification when a preset is pressed",
+          "debug_logging": "Enable detailed log output",
+          "debounce_seconds": "Ignore repeated presses for this many seconds",
+          "playback_verify_attempts": "Retry stream handoff this many times",
+          "playback_verify_delay_seconds": "Wait this many seconds between checks"
+        }
+      },
+      "reconfigure": {
+        "title": "Bose Preset Router",
+        "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs.",
+        "data": {
+          "notify_on_press": "Show a notification when a preset is pressed",
+          "debug_logging": "Enable detailed log output",
+          "debounce_seconds": "Ignore repeated presses for this many seconds",
+          "playback_verify_attempts": "Retry stream handoff this many times",
+          "playback_verify_delay_seconds": "Wait this many seconds between checks"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to the Bose device. Check IP address and network access.",
+      "invalid_volume": "Enter a volume between 0 and 100 percent.",
+      "ip_exists": "This Bose IP address is already assigned to another device.",
+      "invalid_ip": "Enter a valid IPv4 or IPv6 address.",
+      "invalid_url": "Enter a valid URL including the protocol, for example http://...",
+      "ip_required": "Enter the IP address of the Bose device.",
+      "name_exists": "A device with this name already exists.",
+      "name_required": "Enter a device name.",
+      "no_enabled_presets": "Enable at least one preset.",
+      "preset_url_required": "Enabled presets need a stream URL."
+    },
+    "abort": {
+      "single_instance_allowed": "Only one configuration is allowed",
+      "reconfigure_successful": "Configuration updated"
+    }
+  },
+  "config_subentries": {
+    "device": {
+      "title": "Bose device",
+      "flow_title": "{name}",
+      "initiate_flow": {
+        "reconfigure": "Edit device",
+        "user": "Add device"
+      },
+      "step": {
+        "user": {
+          "title": "Add Bose device",
+          "description": "Connect one Bose speaker, choose where its presets should play, and decide which preset should start which stream.",
+          "data": {
+            "name": "Speaker name",
+            "bose_ip": "Bose speaker IP address",
+            "ma_player": "Play on this Music Assistant player",
+            "default_volume": "Preferred start volume in percent (optional)",
+            "preset_1_enabled": "Use preset 1",
+            "preset_1_volume": "Volume for preset 1 in percent (optional)",
+            "preset_1": "Stream URL for preset 1",
+            "preset_2_enabled": "Use preset 2",
+            "preset_2_volume": "Volume for preset 2 in percent (optional)",
+            "preset_2": "Stream URL for preset 2",
+            "preset_3_enabled": "Use preset 3",
+            "preset_3_volume": "Volume for preset 3 in percent (optional)",
+            "preset_3": "Stream URL for preset 3",
+            "preset_4_enabled": "Use preset 4",
+            "preset_4_volume": "Volume for preset 4 in percent (optional)",
+            "preset_4": "Stream URL for preset 4",
+            "preset_5_enabled": "Use preset 5",
+            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_5": "Stream URL for preset 5",
+            "preset_6_enabled": "Use preset 6",
+            "preset_6_volume": "Volume for preset 6 in percent (optional)",
+            "preset_6": "Stream URL for preset 6"
+          }
+        },
+        "presets_a": {
+          "title": "Presets 1 to 3",
+          "description": "Set up the first three presets. For each preset, you can enable it, assign a stream URL, and optionally define its own volume.",
+          "data": {
+            "preset_1_enabled": "Use preset 1",
+            "preset_1_volume": "Volume for preset 1 in percent (optional)",
+            "preset_1": "Stream URL for preset 1",
+            "preset_2_enabled": "Use preset 2",
+            "preset_2_volume": "Volume for preset 2 in percent (optional)",
+            "preset_2": "Stream URL for preset 2",
+            "preset_3_enabled": "Use preset 3",
+            "preset_3_volume": "Volume for preset 3 in percent (optional)",
+            "preset_3": "Stream URL for preset 3"
+          }
+        },
+        "presets_b": {
+          "title": "Presets 4 to 6",
+          "description": "Set up the remaining three presets. Here too, each preset can have its own URL and optional volume.",
+          "data": {
+            "preset_4_enabled": "Use preset 4",
+            "preset_4_volume": "Volume for preset 4 in percent (optional)",
+            "preset_4": "Stream URL for preset 4",
+            "preset_5_enabled": "Use preset 5",
+            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_5": "Stream URL for preset 5",
+            "preset_6_enabled": "Use preset 6",
+            "preset_6_volume": "Volume for preset 6 in percent (optional)",
+            "preset_6": "Stream URL for preset 6"
+          }
+        },
+        "reconfigure": {
+          "title": "Edit Bose device",
+          "description": "Adjust the speaker connection, playback target, volume behavior, and preset-to-stream mapping.",
+          "data": {
+            "name": "Speaker name",
+            "bose_ip": "Bose speaker IP address",
+            "ma_player": "Play on this Music Assistant player",
+            "default_volume": "Preferred start volume in percent (optional)",
+            "preset_1_enabled": "Use preset 1",
+            "preset_1_volume": "Volume for preset 1 in percent (optional)",
+            "preset_1": "Stream URL for preset 1",
+            "preset_2_enabled": "Use preset 2",
+            "preset_2_volume": "Volume for preset 2 in percent (optional)",
+            "preset_2": "Stream URL for preset 2",
+            "preset_3_enabled": "Use preset 3",
+            "preset_3_volume": "Volume for preset 3 in percent (optional)",
+            "preset_3": "Stream URL for preset 3",
+            "preset_4_enabled": "Use preset 4",
+            "preset_4_volume": "Volume for preset 4 in percent (optional)",
+            "preset_4": "Stream URL for preset 4",
+            "preset_5_enabled": "Use preset 5",
+            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_5": "Stream URL for preset 5",
+            "preset_6_enabled": "Use preset 6",
+            "preset_6_volume": "Volume for preset 6 in percent (optional)",
+            "preset_6": "Stream URL for preset 6"
+          }
+        },
+        "reconfigure_presets_a": {
+          "title": "Edit presets 1 to 3",
+          "description": "Adjust the first three presets.",
+          "data": {
+            "preset_1_enabled": "Use preset 1",
+            "preset_1_volume": "Volume for preset 1 in percent (optional)",
+            "preset_1": "Stream URL for preset 1",
+            "preset_2_enabled": "Use preset 2",
+            "preset_2_volume": "Volume for preset 2 in percent (optional)",
+            "preset_2": "Stream URL for preset 2",
+            "preset_3_enabled": "Use preset 3",
+            "preset_3_volume": "Volume for preset 3 in percent (optional)",
+            "preset_3": "Stream URL for preset 3"
+          }
+        },
+        "reconfigure_presets_b": {
+          "title": "Edit presets 4 to 6",
+          "description": "Adjust the remaining three presets.",
+          "data": {
+            "preset_4_enabled": "Use preset 4",
+            "preset_4_volume": "Volume for preset 4 in percent (optional)",
+            "preset_4": "Stream URL for preset 4",
+            "preset_5_enabled": "Use preset 5",
+            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_5": "Stream URL for preset 5",
+            "preset_6_enabled": "Use preset 6",
+            "preset_6_volume": "Volume for preset 6 in percent (optional)",
+            "preset_6": "Stream URL for preset 6"
+          }
+        }
+      },
+      "error": {
+        "cannot_connect": "Could not connect to the Bose device. Check IP address and network access.",
+        "invalid_volume": "Enter a volume between 0 and 100 percent.",
+        "ip_exists": "This Bose IP address is already assigned to another device.",
+        "invalid_ip": "Enter a valid IPv4 or IPv6 address.",
+        "invalid_url": "Enter a valid URL including the protocol, for example http://...",
+        "ip_required": "Enter the IP address of the Bose device.",
+        "name_exists": "A device with this name already exists.",
+        "name_required": "Enter a device name.",
+        "no_enabled_presets": "Enable at least one preset.",
+        "preset_url_required": "Enabled presets need a stream URL."
+      },
+      "abort": {
+        "reconfigure_successful": "Configuration updated"
+      }
+    }
+  },
+  "services": {
+    "trigger_preset": {
+      "name": "Trigger preset",
+      "description": "Manually route a configured preset for testing.",
+      "fields": {
+        "device": {
+          "name": "Device name"
+        },
+        "preset": {
+          "name": "Preset number"
+        }
+      }
+    }
+  }
+}

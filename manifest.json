@@ -1,0 +1,15 @@
+{
+  "domain": "bose_preset_router",
+  "name": "Bose Preset Router",
+  "version": "0.3.0",
+  "documentation": "https://github.com/YOUR_GITHUB_USER/bose_preset_router#readme",
+  "issue_tracker": "https://github.com/YOUR_GITHUB_USER/bose_preset_router/issues",
+  "codeowners": ["@YOUR_GITHUB_USER"],
+  "config_flow": true,
+  "integration_type": "hub",
+  "requirements": [
+    "websockets>=12.0"
+  ],
+  "iot_class": "local_push",
+  "loggers": ["custom_components.bose_preset_router"]
+}

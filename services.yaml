@@ -1,0 +1,15 @@
+trigger_preset:
+  name: Trigger preset
+  description: Manually route a configured preset for testing.
+  fields:
+    device:
+      required: true
+      selector:
+        text:
+    preset:
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box

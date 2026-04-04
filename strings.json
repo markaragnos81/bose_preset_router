@@ -1,0 +1,77 @@
+{
+  "title": "Bose Preset Router",
+  "config": {
+    "initiate_flow": {
+      "reconfigure": "Edit global settings"
+    },
+    "step": {
+      "user": {
+        "title": "Bose Preset Router",
+        "description": "Choose how the integration should behave overall, including notifications, logging, and how carefully stream handoffs should be checked."
+      },
+      "reconfigure": {
+        "title": "Bose Preset Router",
+        "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs."
+      }
+    },
+    "error": {
+      "invalid_volume": "Enter a volume between 0 and 100 percent.",
+      "ip_exists": "This Bose IP address is already assigned to another device.",
+      "invalid_ip": "Enter a valid IPv4 or IPv6 address.",
+      "invalid_url": "Enter a valid URL including the protocol.",
+      "ip_required": "Enter the IP address of the Bose device.",
+      "name_exists": "A device with this name already exists.",
+      "name_required": "Enter a device name.",
+      "no_enabled_presets": "Enable at least one preset.",
+      "preset_url_required": "Enabled presets need a stream URL.",
+      "cannot_connect": "Could not connect to the Bose device. Check IP address and network access."
+    },
+    "abort": {
+      "single_instance_allowed": "Only one configuration is allowed",
+      "reconfigure_successful": "Configuration updated"
+    }
+  },
+  "config_subentries": {
+    "device": {
+      "title": "Bose device",
+      "flow_title": "{name}",
+      "initiate_flow": {
+        "reconfigure": "Edit device",
+        "user": "Add device"
+      },
+      "step": {
+        "user": {
+          "title": "Add Bose device",
+          "description": "Connect one Bose speaker, choose where its presets should play, and decide which preset should start which stream."
+        },
+        "reconfigure": {
+          "title": "Edit Bose device",
+          "description": "Adjust the speaker connection, playback target, volume behavior, and preset-to-stream mapping."
+        }
+      },
+      "error": {
+        "invalid_volume": "Enter a volume between 0 and 100 percent.",
+        "ip_exists": "This Bose IP address is already assigned to another device.",
+        "invalid_ip": "Enter a valid IPv4 or IPv6 address.",
+        "invalid_url": "Enter a valid URL including the protocol.",
+        "ip_required": "Enter the IP address of the Bose device.",
+        "name_exists": "A device with this name already exists.",
+        "name_required": "Enter a device name.",
+        "no_enabled_presets": "Enable at least one preset.",
+        "preset_url_required": "Enabled presets need a stream URL.",
+        "cannot_connect": "Could not connect to the Bose device. Check IP address and network access."
+      },
+      "abort": {
+        "reconfigure_successful": "Configuration updated"
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bose Preset Router options",
+        "description": "Change logging, notifications, and debounce."
+      }
+    }
+  }
+}
