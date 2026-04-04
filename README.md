@@ -124,19 +124,6 @@ Damit laesst sich leichter erkennen, ob ein Fehler aufgetreten ist:
 - bei der Pruefung des Home-Assistant-Playerzustands
 - bei der Bose-seitigen AirPlay-Uebergabe
 
-## Veroeffentlichung Auf GitHub
-
-Vor der Veroeffentlichung sollten diese Punkte geprueft sein:
-
-- GitHub-Links in `manifest.json` zeigen auf dein echtes Repository
-
-Empfohlene GitHub-Einstellungen:
-
-- Oeffentliches Repository
-- Sinnvolle Repository-Beschreibung
-- Topics wie `home-assistant`, `hacs`, `bose`, `soundtouch`, `music-assistant`
-- Mindestens ein GitHub-Release, nachdem die Validierungs-Workflows erfolgreich gelaufen sind
-
 ## HACS-Hinweise
 
 Dieses Repository ist fuer HACS als Custom Repository vorbereitet, ueber [`hacs.json`](hacs.json).
