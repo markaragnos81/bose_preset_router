@@ -138,6 +138,7 @@ Das aktuelle Layout bleibt im Repository-Root und verwendet:
 
 - Funktionsuebersicht: [`docs/FUNCTIONS.md`](docs/FUNCTIONS.md)
 - Veroeffentlichungs-Checkliste: [`docs/PUBLISHING.md`](docs/PUBLISHING.md)
+- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Lizenz
 

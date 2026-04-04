@@ -1,48 +1,35 @@
 # Publishing Checklist
 
-## 1. Create the GitHub repository
+## Versioning Policy
 
-- Create a public GitHub repository
-- Recommended repository name: `bose_preset_router`
-- Add a repository description
-- Add topics like `home-assistant`, `hacs`, `bose`, `soundtouch`, `music-assistant`
+This project uses Semantic Versioning (`MAJOR.MINOR.PATCH`).
 
-## 2. Replace placeholders
+- Increase `PATCH` for fixes, small improvements, documentation-only releases, and non-breaking maintenance
+- Increase `MINOR` for new backwards-compatible features
+- Increase `MAJOR` for breaking changes in behavior, configuration, or compatibility
 
-Update these values in `manifest.json`:
+The version in `manifest.json`, the release tag, and the changelog entry should always match.
 
-- `documentation`
-- `issue_tracker`
-- `codeowners`
+## Release Workflow
 
-Replace `YOUR_GITHUB_USER` with your real GitHub username.
+Before creating a release:
 
-## 3. Push the code
+1. Update `manifest.json` to the next version
+2. Move relevant notes from `CHANGELOG.md` under `Unreleased` into a dated version section
+3. Commit the changes
+4. Push to GitHub
+5. Verify that these workflows pass:
+   - `.github/workflows/hacs.yaml`
+   - `.github/workflows/hassfest.yaml`
+6. Create a GitHub release with the same tag as the manifest version, for example `v0.3.1`
 
-Push the repository to GitHub and verify that these workflows pass:
+## Repository Basics
 
-- `.github/workflows/hacs.yaml`
-- `.github/workflows/hassfest.yaml`
+- Keep the repository public if it should be installable via HACS custom repositories
+- Maintain a repository description and useful topics such as `home-assistant`, `hacs`, `bose`, `soundtouch`, `music-assistant`
+- Keep `manifest.json` links aligned with the real repository URL
 
-## 4. Add a license
-
-Choose a license before publishing publicly.
-
-Common choices:
-
-- MIT
-- Apache-2.0
-
-## 5. Create a GitHub release
-
-For HACS users, create a proper GitHub release after the workflows pass.
-
-Recommended first release:
-
-- `v0.3.0` if you want to keep the current version
-- or a newer version if you want to publish the recent improvements as a new release
-
-## 6. Add the repository to HACS
+## HACS Installation
 
 In Home Assistant:
 
@@ -52,7 +39,7 @@ In Home Assistant:
 4. Select category `Integration`
 5. Install `Bose Preset Router`
 
-## 7. Optional next step
+## Optional Next Step
 
 If you want the integration to appear in the default HACS store later, make sure:
 
