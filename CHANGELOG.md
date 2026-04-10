@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.3.5] - 2026-04-10
+
+### Fixed
+
+- Avoided a `KeyError` when Home Assistant unloads a config entry that is no longer present in `hass.data`
+- Hardened setup/unload bookkeeping by always initializing the domain store before registering a manager
+
 ## [0.3.4] - 2026-04-10
 
 ### Fixed

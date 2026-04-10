@@ -50,16 +50,20 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    domain_data = hass.data.setdefault(DOMAIN, {})
     manager = BosePresetRouterManager(hass, entry)
     manager.async_start()
 
-    hass.data[DOMAIN][entry.entry_id] = manager
+    domain_data[entry.entry_id] = manager
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    manager: BosePresetRouterManager = hass.data[DOMAIN].pop(entry.entry_id)
+    manager: BosePresetRouterManager | None = hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)
+    if manager is None:
+        return True
+
     await manager.async_stop()
     return True
 
