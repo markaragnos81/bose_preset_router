@@ -14,17 +14,17 @@ jobs:
 
       - name: Prepare integration layout
         run: |
-          mkdir -p custom_components/bose_preset_router
+          mkdir -p ha_config/custom_components/bose_preset_router
           shopt -s dotglob
           for path in *; do
             case "$path" in
-              .git|.github|custom_components|docs|__pycache__)
+              .git|.github|custom_components|docs|ha_config|__pycache__)
                 ;;
               *)
-                cp -R "$path" custom_components/bose_preset_router/
+                cp -R "$path" ha_config/custom_components/bose_preset_router/
                 ;;
             esac
           done
 
       - name: Hassfest validation
-        uses: home-assistant/actions/hassfest@master
+        run: docker run --rm -v "$PWD/ha_config:/github/workspace" ghcr.io/home-assistant/hassfest

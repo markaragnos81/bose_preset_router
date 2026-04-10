@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.3.4] - 2026-04-10
+
+### Fixed
+
+- Sorted `manifest.json` keys to match Hassfest requirements
+- Added the required `entry_type` for the `device` config subentry translations
+- Changed the Hassfest workflow to validate only the generated `custom_components` layout, avoiding duplicate root-level integration detection
+
 ## [0.3.3] - 2026-04-10
 
 ### Fixed
