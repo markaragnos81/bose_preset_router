@@ -1,9 +1,5 @@
 {
-  "title": "Bose Preset Router",
   "config": {
-    "initiate_flow": {
-      "reconfigure": "Edit global settings"
-    },
     "step": {
       "user": {
         "title": "Bose Preset Router",

@@ -8,6 +8,15 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.3.3] - 2026-04-10
+
+### Fixed
+
+- Removed invalid global `reconfigure` translation keys from `strings.json` and `translations/en.json`
+- Added an explicit `CONFIG_SCHEMA` to satisfy Home Assistant validation for `async_setup`
+- Adjusted the Hassfest workflow to validate the integration from a generated `custom_components/bose_preset_router` path
+- Updated GitHub Actions checkout steps to `actions/checkout@v5` to avoid the Node.js 20 deprecation warning
+
 ## [0.3.2] - 2026-04-10
 
 ### Fixed

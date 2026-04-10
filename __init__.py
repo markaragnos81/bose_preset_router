@@ -15,6 +15,8 @@ from .const import (
 )
 from .router import BosePresetRouterManager
 
+CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
+
 SERVICE_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_DEVICE): str,
