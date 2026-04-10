@@ -9,7 +9,9 @@
           "debug_logging": "Enable detailed log output",
           "debounce_seconds": "Ignore repeated presses for this many seconds",
           "playback_verify_attempts": "Retry stream handoff this many times",
-          "playback_verify_delay_seconds": "Wait this many seconds between checks"
+          "playback_verify_delay_seconds": "Wait this many seconds between checks",
+          "strict_bose_confirmation": "Stop routing when Bose preset confirmation fails",
+          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation"
         }
       },
       "reconfigure": {
@@ -20,7 +22,9 @@
           "debug_logging": "Enable detailed log output",
           "debounce_seconds": "Ignore repeated presses for this many seconds",
           "playback_verify_attempts": "Retry stream handoff this many times",
-          "playback_verify_delay_seconds": "Wait this many seconds between checks"
+          "playback_verify_delay_seconds": "Wait this many seconds between checks",
+          "strict_bose_confirmation": "Stop routing when Bose preset confirmation fails",
+          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation"
         }
       }
     },

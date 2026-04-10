@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.3.6] - 2026-04-10
+
+### Fixed
+
+- Resolved preset device handoff mismatches by resolving websocket events to configured devices via Bose IP before falling back to the device name
+- Added configurable Bose preset confirmation behavior so strict confirmation can be disabled and tolerant confirmation can be enabled for speakers with inconsistent `now_playing` metadata
+
 ## [0.3.5] - 2026-04-10
 
 ### Fixed

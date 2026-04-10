@@ -67,7 +67,7 @@
     "step": {
       "init": {
         "title": "Bose Preset Router options",
-        "description": "Change logging, notifications, and debounce."
+        "description": "Change logging, notifications, debounce, and Bose preset confirmation behavior."
       }
     }
   }

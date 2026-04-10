@@ -25,8 +25,12 @@ from .const import (
     CONF_NOTIFY_ON_PRESS,
     CONF_PLAYBACK_VERIFY_ATTEMPTS,
     CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
+    CONF_STRICT_BOSE_CONFIRMATION,
+    CONF_TOLERANT_BOSE_CONFIRMATION,
     DEFAULT_PLAYBACK_VERIFY_ATTEMPTS,
     DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS,
+    DEFAULT_STRICT_BOSE_CONFIRMATION,
+    DEFAULT_TOLERANT_BOSE_CONFIRMATION,
     DOMAIN,
     PRESET_IDS,
     WS_PORT,
@@ -105,6 +109,30 @@ class BosePresetRouterManager:
         )
 
     @property
+    def strict_bose_confirmation(self) -> bool:
+        return bool(
+            self.entry.options.get(
+                CONF_STRICT_BOSE_CONFIRMATION,
+                self.entry.data.get(
+                    CONF_STRICT_BOSE_CONFIRMATION,
+                    DEFAULT_STRICT_BOSE_CONFIRMATION,
+                ),
+            )
+        )
+
+    @property
+    def tolerant_bose_confirmation(self) -> bool:
+        return bool(
+            self.entry.options.get(
+                CONF_TOLERANT_BOSE_CONFIRMATION,
+                self.entry.data.get(
+                    CONF_TOLERANT_BOSE_CONFIRMATION,
+                    DEFAULT_TOLERANT_BOSE_CONFIRMATION,
+                ),
+            )
+        )
+
+    @property
     def devices(self) -> list[dict[str, Any]]:
         return [
             sub.data
@@ -121,6 +149,36 @@ class BosePresetRouterManager:
                 device.get(CONF_DEFAULT_VOLUME),
             ),
         }
+
+    def _resolve_device(
+        self,
+        *,
+        device_name: str,
+        bose_ip: str | None = None,
+    ) -> dict[str, Any] | None:
+        if bose_ip:
+            device = next(
+                (d for d in self.devices if d.get(CONF_BOSE_IP) == bose_ip),
+                None,
+            )
+            if device is not None:
+                return device
+
+            _LOGGER.warning(
+                "No configured device matches Bose IP %s for device name %s",
+                bose_ip,
+                device_name,
+            )
+
+        device = next((d for d in self.devices if d[CONF_NAME] == device_name), None)
+        if device is not None:
+            return device
+
+        normalized_name = device_name.casefold()
+        return next(
+            (d for d in self.devices if str(d.get(CONF_NAME, "")).casefold() == normalized_name),
+            None,
+        )
 
     def _log_stage(
         self,
@@ -325,6 +383,13 @@ class BosePresetRouterManager:
         if location.endswith(f"/presets/{preset}") or location.endswith(f"preset/{preset}"):
             return True, "location"
 
+        if self.tolerant_bose_confirmation:
+            if f"/presets/{preset}" in location or f"preset/{preset}" in location:
+                return True, "location_contains_preset"
+
+            if self._bose_now_playing_has_metadata(state):
+                return True, "tolerant_metadata"
+
         if self.debug_logging:
             _LOGGER.debug(
                 "Bose now_playing did not confirm preset for device=%s preset=%s source=%s location=%s item=%s track=%s station=%s",
@@ -460,6 +525,7 @@ class BosePresetRouterManager:
                             preset=preset,
                             reason="websocket",
                             item_name=item_name,
+                            bose_ip=bose_ip,
                         )
 
             except asyncio.CancelledError:
@@ -479,10 +545,15 @@ class BosePresetRouterManager:
         preset: int,
         reason: str = "unknown",
         item_name: str | None = None,
+        bose_ip: str | None = None,
     ) -> None:
-        device = next((d for d in self.devices if d[CONF_NAME] == device_name), None)
+        device = self._resolve_device(device_name=device_name, bose_ip=bose_ip)
         if not device:
-            _LOGGER.warning("Unknown device name in preset handler: %s", device_name)
+            _LOGGER.warning(
+                "Unknown device in preset handler: name=%s bose_ip=%s",
+                device_name,
+                bose_ip or "-",
+            )
             return
 
         debounce_key = f"{device_name}:{preset}"
@@ -549,7 +620,7 @@ class BosePresetRouterManager:
             ma_player=ma_player,
             detail=f"verified={bose_verified} via={bose_reason}",
         )
-        if not bose_verified:
+        if not bose_verified and self.strict_bose_confirmation:
             return
 
         if self.notify_on_press:

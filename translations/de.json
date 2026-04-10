@@ -13,7 +13,9 @@
           "debug_logging": "Ausfuehrliches Logging aktivieren",
           "debounce_seconds": "Wiederholte Tastendruecke fuer so viele Sekunden ignorieren",
           "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
-          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten"
+          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
+          "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
+          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
         }
       },
       "reconfigure": {
@@ -24,7 +26,9 @@
           "debug_logging": "Ausfuehrliches Logging aktivieren",
           "debounce_seconds": "Wiederholte Tastendruecke fuer so viele Sekunden ignorieren",
           "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
-          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten"
+          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
+          "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
+          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
         }
       }
     },

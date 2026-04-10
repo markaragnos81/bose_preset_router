@@ -22,11 +22,15 @@ from .const import (
     CONF_NOTIFY_ON_PRESS,
     CONF_PLAYBACK_VERIFY_ATTEMPTS,
     CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
+    CONF_STRICT_BOSE_CONFIRMATION,
+    CONF_TOLERANT_BOSE_CONFIRMATION,
     DEFAULT_DEBUG_LOGGING,
     DEFAULT_DEBOUNCE_SECONDS,
     DEFAULT_NOTIFY_ON_PRESS,
     DEFAULT_PLAYBACK_VERIFY_ATTEMPTS,
     DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS,
+    DEFAULT_STRICT_BOSE_CONFIRMATION,
+    DEFAULT_TOLERANT_BOSE_CONFIRMATION,
     DOMAIN,
     PRESET_IDS,
     SUBENTRY_TYPE_DEVICE,
@@ -57,6 +61,14 @@ def global_schema() -> vol.Schema:
             ): selector.NumberSelector(
                 selector.NumberSelectorConfig(min=0.5, max=10, step=0.5, mode=selector.NumberSelectorMode.BOX)
             ),
+            vol.Required(
+                CONF_STRICT_BOSE_CONFIRMATION,
+                default=DEFAULT_STRICT_BOSE_CONFIRMATION,
+            ): selector.BooleanSelector(),
+            vol.Required(
+                CONF_TOLERANT_BOSE_CONFIRMATION,
+                default=DEFAULT_TOLERANT_BOSE_CONFIRMATION,
+            ): selector.BooleanSelector(),
         }
     )
 
