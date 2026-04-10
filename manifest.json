@@ -1,7 +1,7 @@
 {
   "domain": "bose_preset_router",
   "name": "Bose Preset Router",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "documentation": "https://github.com/markaragnos81/bose_preset_router#readme",
   "issue_tracker": "https://github.com/markaragnos81/bose_preset_router/issues",
   "codeowners": ["@markaragnos81"],

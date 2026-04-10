@@ -8,6 +8,19 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.3.2] - 2026-04-10
+
+### Fixed
+
+- Accepted Bose `now_playing` handoffs via UPNP as well as AirPlay after Music Assistant playback changes
+- Tightened Bose-side handoff verification so unchanged metadata no longer counts as a successful transfer
+- Returned early when Bose preset confirmation fails instead of continuing the routing pipeline
+- Aligned manager startup with the synchronous `async_start()` implementation in `__init__.py`
+
+### Changed
+
+- Updated the README to describe Bose-side verification more accurately for both AirPlay and UPNP handoffs
+
 ## [0.3.1] - 2026-04-04
 
 ### Added

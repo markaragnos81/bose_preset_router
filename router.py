@@ -5,8 +5,8 @@ import logging
 import re
 import time
 import xml.etree.ElementTree as ET
-from urllib.parse import unquote, urlsplit
 from typing import Any
+from urllib.parse import unquote, urlsplit
 
 import websockets
 from homeassistant.components import persistent_notification
@@ -25,9 +25,9 @@ from .const import (
     CONF_NOTIFY_ON_PRESS,
     CONF_PLAYBACK_VERIFY_ATTEMPTS,
     CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
-    DOMAIN,
     DEFAULT_PLAYBACK_VERIFY_ATTEMPTS,
     DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS,
+    DOMAIN,
     PRESET_IDS,
     WS_PORT,
     preset_enabled_key,
@@ -40,6 +40,13 @@ _LOGGER = logging.getLogger(__name__)
 PRESET_RE = re.compile(r'<preset id="(\d+)">')
 ITEM_RE = re.compile(r"<itemName>(.*?)</itemName>")
 PLAYING_STATES = {"playing", "buffering"}
+PASSIVE_BOSE_HANDOFF_RECHECK_REASONS = {
+    "airplay_without_metadata",
+    "airplay_metadata_unchanged",
+    "bose_now_playing_unavailable",
+    "upnp_without_metadata",
+    "upnp_metadata_unchanged",
+}
 
 
 class BosePresetRouterManager:
@@ -78,7 +85,10 @@ class BosePresetRouterManager:
         return int(
             self.entry.options.get(
                 CONF_PLAYBACK_VERIFY_ATTEMPTS,
-                self.entry.data.get(CONF_PLAYBACK_VERIFY_ATTEMPTS, DEFAULT_PLAYBACK_VERIFY_ATTEMPTS),
+                self.entry.data.get(
+                    CONF_PLAYBACK_VERIFY_ATTEMPTS,
+                    DEFAULT_PLAYBACK_VERIFY_ATTEMPTS,
+                ),
             )
         )
 
@@ -106,7 +116,10 @@ class BosePresetRouterManager:
         return {
             "enabled": bool(device.get(preset_enabled_key(preset), True)),
             "stream_url": device.get(preset_url_key(preset)),
-            "volume": device.get(preset_volume_key(preset), device.get(CONF_DEFAULT_VOLUME)),
+            "volume": device.get(
+                preset_volume_key(preset),
+                device.get(CONF_DEFAULT_VOLUME),
+            ),
         }
 
     def _log_stage(
@@ -273,8 +286,16 @@ class BosePresetRouterManager:
             "artist": root.findtext("artist", default=""),
             "album": root.findtext("album", default=""),
             "station_name": root.findtext("stationName", default=""),
-            "location": content_item.attrib.get("location", "") if content_item is not None else "",
-            "source_type": content_item.attrib.get("source", "") if content_item is not None else "",
+            "location": (
+                content_item.attrib.get("location", "")
+                if content_item is not None
+                else ""
+            ),
+            "source_type": (
+                content_item.attrib.get("source", "")
+                if content_item is not None
+                else ""
+            ),
         }
 
     async def _async_confirm_bose_preset(
@@ -295,7 +316,9 @@ class BosePresetRouterManager:
             state.get("track"),
             state.get("station_name"),
         )
-        if expected_name and any(self._normalize_text(value) == expected_name for value in candidate_values):
+        if expected_name and any(
+            self._normalize_text(value) == expected_name for value in candidate_values
+        ):
             return True, "item_name"
 
         location = state.get("location", "")
@@ -324,6 +347,34 @@ class BosePresetRouterManager:
             for field in ("item_name", "track", "artist", "album", "station_name")
         )
 
+    def _should_passively_recheck_bose_handoff(self, reason: str) -> bool:
+        return reason in PASSIVE_BOSE_HANDOFF_RECHECK_REASONS
+
+    def _bose_now_playing_transitioned(
+        self,
+        previous_state: dict[str, str] | None,
+        current_state: dict[str, str],
+    ) -> bool:
+        if previous_state is None:
+            return True
+
+        tracked_fields = (
+            "source",
+            "source_account",
+            "item_name",
+            "track",
+            "artist",
+            "album",
+            "station_name",
+            "location",
+            "source_type",
+        )
+        return any(
+            self._normalize_text(previous_state.get(field))
+            != self._normalize_text(current_state.get(field))
+            for field in tracked_fields
+        )
+
     async def _async_verify_bose_stream_handoff(
         self,
         *,
@@ -335,33 +386,34 @@ class BosePresetRouterManager:
             return False, "bose_now_playing_unavailable"
 
         current_source = self._normalize_text(current_state.get("source"))
-        previous_source = self._normalize_text(previous_state.get("source")) if previous_state else ""
         metadata_present = self._bose_now_playing_has_metadata(current_state)
 
-        if current_source != "airplay":
+        if current_source not in {"airplay", "upnp"}:
             return False, f"source={current_state.get('source', '-') or '-'}"
 
         if not metadata_present:
-            return False, "airplay_without_metadata"
+            return False, f"{current_source}_without_metadata"
 
         if previous_state is None:
-            return True, "airplay_metadata"
+            return True, f"{current_source}_metadata"
 
-        if (
-            previous_source != current_source
-            or self._normalize_text(previous_state.get("track")) != self._normalize_text(current_state.get("track"))
-            or self._normalize_text(previous_state.get("artist")) != self._normalize_text(current_state.get("artist"))
-            or self._normalize_text(previous_state.get("album")) != self._normalize_text(current_state.get("album"))
-            or self._normalize_text(previous_state.get("item_name")) != self._normalize_text(current_state.get("item_name"))
-        ):
-            return True, "airplay_metadata_changed"
+        if self._bose_now_playing_transitioned(previous_state, current_state):
+            return True, f"{current_source}_metadata_changed"
 
-        return True, "airplay_metadata_unchanged"
+        return False, f"{current_source}_metadata_unchanged"
 
-    async def async_start(self) -> None:
+    def async_start(self) -> None:
         self._stop_event.clear()
+        self._tasks.clear()
+
         for device in self.devices:
-            self._tasks.append(self.hass.async_create_task(self._device_loop(device)))
+            name = device[CONF_NAME]
+            task = self.entry.async_create_background_task(
+                self.hass,
+                self._device_loop(device),
+                f"{DOMAIN}_{name}_device_loop",
+            )
+            self._tasks.append(task)
 
     async def async_stop(self) -> None:
         self._stop_event.set()
@@ -397,7 +449,7 @@ class BosePresetRouterManager:
                             continue
 
                         preset = int(match.group(1))
-                        if preset < 1 or preset > 6:
+                        if preset not in PRESET_IDS:
                             continue
 
                         item_name_match = ITEM_RE.search(message)
@@ -488,13 +540,17 @@ class BosePresetRouterManager:
             item_name=item_name,
         )
         self._log_stage(
-            logging.DEBUG if bose_verified and self.debug_logging else logging.WARNING if not bose_verified else logging.INFO,
+            logging.DEBUG
+            if bose_verified and self.debug_logging
+            else logging.WARNING if not bose_verified else logging.INFO,
             "bose_preset_confirmation",
             device_name=device_name,
             preset=preset,
             ma_player=ma_player,
             detail=f"verified={bose_verified} via={bose_reason}",
         )
+        if not bose_verified:
+            return
 
         if self.notify_on_press:
             persistent_notification.async_create(
@@ -579,6 +635,27 @@ class BosePresetRouterManager:
                     bose_ip=device[CONF_BOSE_IP],
                     previous_state=previous_bose_state,
                 )
+                if (
+                    not bose_handoff_verified
+                    and attempt < self.playback_verify_attempts
+                    and self._should_passively_recheck_bose_handoff(bose_handoff_reason)
+                ):
+                    self._log_stage(
+                        logging.INFO,
+                        "bose_handoff_recheck",
+                        device_name=device_name,
+                        preset=preset,
+                        ma_player=ma_player,
+                        attempt=attempt,
+                        total_attempts=self.playback_verify_attempts,
+                        detail=f"waiting_for_settle via={bose_handoff_reason}",
+                    )
+                    await asyncio.sleep(self.playback_verify_delay_seconds)
+                    bose_handoff_verified, bose_handoff_reason = await self._async_verify_bose_stream_handoff(
+                        bose_ip=device[CONF_BOSE_IP],
+                        previous_state=previous_bose_state,
+                    )
+
                 if not bose_handoff_verified:
                     self._log_stage(
                         logging.WARNING,

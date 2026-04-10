@@ -24,7 +24,7 @@ Die Integration ist fuer Setups gedacht, in denen ein Bose SoundTouch als physis
 3. Die konfigurierte Stream-URL wird per `media_player.play_media` an den ausgewaehlten Home-Assistant- bzw. Music-Assistant-Player uebergeben.
 4. Die Uebergabe wird auf zwei Wegen geprueft:
    - ueber den Zielplayer-Zustand in Home Assistant
-   - ueber den Bose-`now_playing`-Endpunkt auf Port `8090`, inklusive erfolgreicher AirPlay-Uebergabe mit Metadaten
+   - ueber den Bose-`now_playing`-Endpunkt auf Port `8090`, inklusive erfolgreicher Bose-seitiger Uebergabe mit Metadaten, zum Beispiel per AirPlay oder UPNP
 5. Wenn die Verifikation fehlschlaegt, wird die Wiedergabe gemaess der konfigurierten Retry-Einstellungen erneut versucht.
 
 ## Voraussetzungen
@@ -122,7 +122,7 @@ Damit laesst sich leichter erkennen, ob ein Fehler aufgetreten ist:
 - bei der Preset-Erkennung am Bose
 - beim `play_media`-Aufruf
 - bei der Pruefung des Home-Assistant-Playerzustands
-- bei der Bose-seitigen AirPlay-Uebergabe
+- bei der Bose-seitigen Stream-Uebergabe, etwa per AirPlay oder UPNP
 
 ## HACS-Hinweise
 

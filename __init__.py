@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
@@ -50,7 +49,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     manager = BosePresetRouterManager(hass, entry)
-    await manager.async_start()
+    manager.async_start()
 
     hass.data[DOMAIN][entry.entry_id] = manager
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
