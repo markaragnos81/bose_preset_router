@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.4.14] - 2026-05-09
+
+### Changed
+
+- Erweitere die README deutlich fuer Nutzer, die per HACS direkt von `0.4.3` auf die neue lokale SoundTouch-Architektur aktualisieren, inklusive Update-Hinweisen, Funktionsueberblick und Migrationskontext
+
 ## [0.4.13] - 2026-05-09
 
 ### Added
