@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, ServiceCall
+from homeassistant.core import HomeAssistant, ServiceCall, callback
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
 from .coordinator import BoseSoundTouchCoordinator
@@ -27,6 +29,9 @@ from .const import (
     SERVICE_TRIGGER_PRESET,
 )
 from .router import BosePresetRouterManager
+
+_LOGGER = logging.getLogger(__name__)
+DATA_LOADED_PLATFORMS = "loaded_platforms"
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
@@ -240,11 +245,65 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     return True
 
 
+def _device_matches_coordinator(device_entry: dr.DeviceEntry, coordinator: BoseSoundTouchCoordinator) -> bool:
+    configuration_url = str(device_entry.configuration_url or "")
+    if configuration_url == f"http://{coordinator.bose_ip}:8090/info":
+        return True
+    return str(device_entry.name or "").casefold() == coordinator.device_name.casefold()
+
+
+@callback
+def _async_cleanup_stale_devices(
+    hass: HomeAssistant,
+    entry: ConfigEntry,
+    coordinators: dict[str, BoseSoundTouchCoordinator],
+) -> None:
+    device_registry = dr.async_get(hass)
+    current_identifiers = {
+        (entry.domain, coordinator.registry_identifier) for coordinator in coordinators.values()
+    }
+    devices = dr.async_entries_for_config_entry(device_registry, entry.entry_id)
+
+    for device_entry in devices:
+        domain_identifiers = {
+            identifier for identifier in device_entry.identifiers if identifier[0] == entry.domain
+        }
+        if domain_identifiers & current_identifiers:
+            continue
+
+        match = next(
+            (
+                coordinator
+                for coordinator in coordinators.values()
+                if _device_matches_coordinator(device_entry, coordinator)
+            ),
+            None,
+        )
+        if match is None:
+            continue
+
+        _LOGGER.info(
+            "Detaching stale Bose device registry entry %s (%s) in favor of subentry %s",
+            device_entry.name or "-",
+            device_entry.id,
+            match.subentry_id,
+        )
+        device_registry.async_update_device(
+            device_entry.id,
+            remove_config_entry_id=entry.entry_id,
+        )
+
+
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data = hass.data.setdefault(DOMAIN, {})
     manager = BosePresetRouterManager(hass, entry)
     coordinators = {
-        subentry_id: BoseSoundTouchCoordinator(hass, entry, device=subentry.data)
+        subentry_id: BoseSoundTouchCoordinator(
+            hass,
+            entry,
+            subentry_id=subentry_id,
+            device=subentry.data,
+        )
         for subentry_id, subentry in entry.subentries.items()
         if subentry.subentry_type == "device"
     }
@@ -252,13 +311,31 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     for coordinator in coordinators.values():
         await coordinator.async_start()
 
+    device_registry = dr.async_get(hass)
+    for coordinator in coordinators.values():
+        info = coordinator.data.get("info", {}) if coordinator.data else {}
+        model = str(info.get("type") or "") or None
+        device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            config_subentry_id=coordinator.subentry_id,
+            identifiers={(entry.domain, coordinator.registry_identifier)},
+            configuration_url=f"http://{coordinator.bose_ip}:8090/info",
+            manufacturer="Bose",
+            model=model,
+            name=coordinator.device_name,
+        )
+
+    _async_cleanup_stale_devices(hass, entry, coordinators)
+
     manager.async_start()
 
     domain_data[entry.entry_id] = {
         DATA_MANAGER: manager,
         DATA_COORDINATORS: coordinators,
+        DATA_LOADED_PLATFORMS: False,
     }
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    domain_data[entry.entry_id][DATA_LOADED_PLATFORMS] = True
     entry.async_on_unload(entry.add_update_listener(async_reload_entry))
     return True
 
@@ -270,7 +347,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     manager: BosePresetRouterManager = entry_data[DATA_MANAGER]
     coordinators: dict[str, BoseSoundTouchCoordinator] = entry_data[DATA_COORDINATORS]
-    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    unload_ok = True
+    if entry_data.get(DATA_LOADED_PLATFORMS):
+        unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     await asyncio.gather(
         manager.async_stop(),
@@ -281,5 +360,15 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
-    await async_unload_entry(hass, entry)
-    await async_setup_entry(hass, entry)
+    await hass.config_entries.async_reload(entry.entry_id)
+
+
+async def async_remove_config_entry_device(
+    hass: HomeAssistant,
+    config_entry: ConfigEntry,
+    device_entry: dr.DeviceEntry,
+) -> bool:
+    domain_identifiers = {
+        identifier[1] for identifier in device_entry.identifiers if identifier[0] == config_entry.domain
+    }
+    return not any(identifier.startswith("subentry:") for identifier in domain_identifiers)

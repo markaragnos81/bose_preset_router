@@ -72,7 +72,7 @@
           "description": "Waehle eines der gefundenen Bose-Geraete und ordne das Wiedergabeziel zu.",
           "data": {
             "discovered_device": "Gefundenes Bose-Geraet",
-            "ma_player": "Auf diesem Music-Assistant-Player abspielen",
+            "ma_player": "Auf diesem Music-Assistant-Player abspielen (optional)",
             "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)"
           }
         },
@@ -82,7 +82,7 @@
           "data": {
             "name": "Name des Lautsprechers",
             "bose_ip": "IP-Adresse des Bose-Lautsprechers",
-            "ma_player": "Auf diesem Music-Assistant-Player abspielen",
+            "ma_player": "Auf diesem Music-Assistant-Player abspielen (optional)",
             "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)",
             "preset_1_enabled": "Preset 1 verwenden",
             "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
@@ -140,7 +140,7 @@
           "data": {
             "name": "Name des Lautsprechers",
             "bose_ip": "IP-Adresse des Bose-Lautsprechers",
-            "ma_player": "Auf diesem Music-Assistant-Player abspielen",
+            "ma_player": "Auf diesem Music-Assistant-Player abspielen (optional)",
             "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)",
             "preset_1_enabled": "Preset 1 verwenden",
             "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",

@@ -32,6 +32,14 @@ class BoseSoundTouchApi:
 
         return ET.fromstring(payload)
 
+    async def _async_get_text(self, path: str) -> str:
+        session = async_get_clientsession(self.hass)
+        url = f"http://{self.host}:8090/{path.lstrip('/')}"
+
+        async with session.get(url, timeout=5) as response:
+            response.raise_for_status()
+            return await response.text()
+
     async def _async_post_xml(self, path: str, body: str) -> ET.Element:
         session = async_get_clientsession(self.hass)
         url = f"http://{self.host}:8090/{path.lstrip('/')}"
@@ -166,7 +174,7 @@ class BoseSoundTouchApi:
         await self._async_post_xml("volume", f"<volume><muteenabled>{value}</muteenabled></volume>")
 
     async def async_standby(self) -> None:
-        await self._async_post_xml("standby", "<standby/>")
+        await self._async_get_text("standby")
 
     async def async_power_on(self) -> None:
         await self.async_send_key("POWER")
@@ -268,7 +276,34 @@ class BoseSoundTouchApi:
             self.async_get_presets(),
             self.async_get_sources(),
             self.async_get_zone(),
+            return_exceptions=True,
         )
+
+        if isinstance(info, Exception):
+            raise info
+        if isinstance(volume, Exception):
+            raise volume
+        if isinstance(now_playing, Exception):
+            raise now_playing
+        if isinstance(presets, Exception):
+            raise presets
+        if isinstance(sources, Exception):
+            _LOGGER.debug(
+                "SoundTouch sources endpoint unavailable for %s (%s): %s",
+                self.device_name,
+                self.host,
+                sources,
+            )
+            sources = []
+        if isinstance(zone, Exception):
+            _LOGGER.debug(
+                "SoundTouch zone endpoint unavailable for %s (%s): %s",
+                self.device_name,
+                self.host,
+                zone,
+            )
+            zone = {"master_id": "", "sender_ip": "", "members": []}
+
         return {
             "info": info,
             "volume": volume,

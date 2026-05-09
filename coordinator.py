@@ -21,9 +21,11 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         hass: HomeAssistant,
         entry: ConfigEntry,
         *,
+        subentry_id: str,
         device: dict[str, Any],
     ) -> None:
         self.entry = entry
+        self.subentry_id = subentry_id
         self.device = device
         self.api = BoseSoundTouchApi(
             hass,
@@ -48,6 +50,10 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     @property
     def bose_ip(self) -> str:
         return str(self.device[CONF_BOSE_IP])
+
+    @property
+    def registry_identifier(self) -> str:
+        return f"subentry:{self.subentry_id}"
 
     @property
     def device_id(self) -> str:

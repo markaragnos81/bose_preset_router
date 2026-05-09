@@ -48,6 +48,12 @@ MANUAL_SETUP_METHOD = "manual"
 ATTR_SETUP_METHOD = "setup_method"
 ATTR_DISCOVERED_DEVICE = "discovered_device"
 SSDP_MEDIA_RENDERER_ST = "urn:schemas-upnp-org:device:MediaRenderer:1"
+BASIC_DEVICE_KEYS = {
+    CONF_NAME,
+    CONF_BOSE_IP,
+    CONF_MA_PLAYER,
+    CONF_DEFAULT_VOLUME,
+}
 
 
 def global_schema() -> vol.Schema:
@@ -121,7 +127,7 @@ def device_basic_schema() -> vol.Schema:
         {
             vol.Required(CONF_NAME): selector.TextSelector(),
             vol.Required(CONF_BOSE_IP): selector.TextSelector(),
-            vol.Required(CONF_MA_PLAYER): selector.EntitySelector(
+            vol.Optional(CONF_MA_PLAYER): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="media_player")
             ),
             vol.Optional(CONF_DEFAULT_VOLUME): _volume_selector(),
@@ -153,7 +159,7 @@ def device_schema() -> vol.Schema:
     schema: dict = {
         vol.Required(CONF_NAME): selector.TextSelector(),
         vol.Required(CONF_BOSE_IP): selector.TextSelector(),
-        vol.Required(CONF_MA_PLAYER): selector.EntitySelector(
+        vol.Optional(CONF_MA_PLAYER): selector.EntitySelector(
             selector.EntitySelectorConfig(domain="media_player")
         ),
         vol.Optional(CONF_DEFAULT_VOLUME): _volume_selector(),
@@ -414,7 +420,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
                         mode=selector.SelectSelectorMode.DROPDOWN,
                     )
                 ),
-                vol.Required(CONF_MA_PLAYER): selector.EntitySelector(
+                vol.Optional(CONF_MA_PLAYER): selector.EntitySelector(
                     selector.EntitySelectorConfig(domain="media_player")
                 ),
                 vol.Optional(CONF_DEFAULT_VOLUME): _volume_selector(),
@@ -493,8 +499,9 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
             self._pending_user_input = {
                 CONF_NAME: selected[CONF_NAME],
                 CONF_BOSE_IP: selected[CONF_BOSE_IP],
-                CONF_MA_PLAYER: user_input[CONF_MA_PLAYER],
             }
+            if user_input.get(CONF_MA_PLAYER):
+                self._pending_user_input[CONF_MA_PLAYER] = user_input[CONF_MA_PLAYER]
             if CONF_DEFAULT_VOLUME in user_input:
                 self._pending_user_input[CONF_DEFAULT_VOLUME] = user_input[CONF_DEFAULT_VOLUME]
             return await self.async_step_presets_a()
@@ -557,7 +564,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
             self._pending_user_input = normalized_input
             basic_errors = {
-                key: value for key, value in errors.items() if key in self._basic_fields(normalized_input)
+                key: value for key, value in errors.items() if key in BASIC_DEVICE_KEYS
             }
             preset_a_errors = {
                 key: value
@@ -662,7 +669,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
             self._pending_user_input = normalized_input
             basic_errors = {
-                key: value for key, value in errors.items() if key in self._basic_fields(normalized_input)
+                key: value for key, value in errors.items() if key in BASIC_DEVICE_KEYS
             }
             preset_a_errors = {
                 key: value

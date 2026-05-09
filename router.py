@@ -567,8 +567,9 @@ class BosePresetRouterManager:
 
         preset_config = self._preset_config(device, preset)
         stream_url = preset_config["stream_url"]
-        ma_player = device[CONF_MA_PLAYER]
+        ma_player = str(device.get(CONF_MA_PLAYER) or "").strip()
         target_volume = preset_config["volume"]
+        target_label = ma_player or "(not configured)"
 
         if not preset_config["enabled"]:
             _LOGGER.info(
@@ -583,13 +584,29 @@ class BosePresetRouterManager:
             _LOGGER.warning("No stream configured for %s preset %s", device_name, preset)
             return
 
+        if not ma_player:
+            _LOGGER.warning(
+                "No target media player configured for device=%s preset=%s; Bose device entity was created but routing is disabled until a player is assigned",
+                device_name,
+                preset,
+            )
+            self._log_stage(
+                logging.WARNING,
+                "routing_skipped",
+                device_name=device_name,
+                preset=preset,
+                ma_player=target_label,
+                detail="no_target_player_configured",
+            )
+            return
+
         _LOGGER.info(
             "Routing device=%s preset=%s reason=%s item=%s player=%s volume=%s url=%s",
             device_name,
             preset,
             reason,
             item_name,
-            ma_player,
+            target_label,
             target_volume if target_volume is not None else "unchanged",
             stream_url,
         )
@@ -598,7 +615,7 @@ class BosePresetRouterManager:
             "preset_detected",
             device_name=device_name,
             preset=preset,
-            ma_player=ma_player,
+            ma_player=target_label,
             detail=f"reason={reason} item={item_name or '-'}",
         )
 
@@ -615,7 +632,7 @@ class BosePresetRouterManager:
             "bose_preset_confirmation",
             device_name=device_name,
             preset=preset,
-            ma_player=ma_player,
+            ma_player=target_label,
             detail=f"verified={bose_verified} via={bose_reason}",
         )
         if not bose_verified and self.strict_bose_confirmation:
@@ -630,7 +647,7 @@ class BosePresetRouterManager:
                     f"Preset: {preset}\n"
                     f"Item: {item_name or '-'}\n"
                     f"Bose confirm: {'yes' if bose_verified else 'no'} ({bose_reason})\n"
-                    f"Target player: {ma_player}\n"
+                    f"Target player: {target_label}\n"
                     f"Volume: {target_volume if target_volume is not None else 'unchanged'}\n"
                     f"URL: {stream_url}"
                 ),
@@ -653,7 +670,7 @@ class BosePresetRouterManager:
                     "Failed to set volume for device=%s preset=%s player=%s volume=%s: %s",
                     device_name,
                     preset,
-                    ma_player,
+                    target_label,
                     target_volume,
                     err,
                 )
@@ -669,7 +686,7 @@ class BosePresetRouterManager:
                 "play_media_send",
                 device_name=device_name,
                 preset=preset,
-                ma_player=ma_player,
+                ma_player=target_label,
                 attempt=attempt,
                 total_attempts=self.playback_verify_attempts,
                 detail=f"url={stream_url}",
@@ -695,7 +712,7 @@ class BosePresetRouterManager:
                     "player_verification_ok",
                     device_name=device_name,
                     preset=preset,
-                    ma_player=ma_player,
+                    ma_player=target_label,
                     attempt=attempt,
                     total_attempts=self.playback_verify_attempts,
                     detail=f"via={verification_reason}",
@@ -714,7 +731,7 @@ class BosePresetRouterManager:
                         "bose_handoff_recheck",
                         device_name=device_name,
                         preset=preset,
-                        ma_player=ma_player,
+                        ma_player=target_label,
                         attempt=attempt,
                         total_attempts=self.playback_verify_attempts,
                         detail=f"waiting_for_settle via={bose_handoff_reason}",
@@ -731,7 +748,7 @@ class BosePresetRouterManager:
                         "bose_handoff_failed",
                         device_name=device_name,
                         preset=preset,
-                        ma_player=ma_player,
+                        ma_player=target_label,
                         attempt=attempt,
                         total_attempts=self.playback_verify_attempts,
                         detail=f"via={bose_handoff_reason}",
@@ -744,7 +761,7 @@ class BosePresetRouterManager:
                     "handoff_complete",
                     device_name=device_name,
                     preset=preset,
-                    ma_player=ma_player,
+                    ma_player=target_label,
                     attempt=attempt,
                     total_attempts=self.playback_verify_attempts,
                     detail=f"via={verification_reason}+{bose_handoff_reason}",
@@ -756,7 +773,7 @@ class BosePresetRouterManager:
                 "player_verification_failed",
                 device_name=device_name,
                 preset=preset,
-                ma_player=ma_player,
+                ma_player=target_label,
                 attempt=attempt,
                 total_attempts=self.playback_verify_attempts,
                 detail=f"via={verification_reason}",
@@ -767,7 +784,7 @@ class BosePresetRouterManager:
             "handoff_failed",
             device_name=device_name,
             preset=preset,
-            ma_player=ma_player,
+            ma_player=target_label,
             attempt=self.playback_verify_attempts,
             total_attempts=self.playback_verify_attempts,
             detail=f"final_reason={verification_reason}",
@@ -780,7 +797,7 @@ class BosePresetRouterManager:
                     f"Die Stream-Uebergabe konnte nicht bestaetigt werden.\n"
                     f"Bose device: {device_name}\n"
                     f"Preset: {preset}\n"
-                    f"Target player: {ma_player}\n"
+                    f"Target player: {target_label}\n"
                     f"URL: {stream_url}"
                 ),
                 notification_id=f"{DOMAIN}_{device_name}_{preset}_verification_failed",

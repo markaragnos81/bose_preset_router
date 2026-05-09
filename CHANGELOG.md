@@ -8,6 +8,70 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.4.12] - 2026-05-09
+
+### Changed
+
+- Ersetzte die lokalen Brand-Assets durch die neuen hellen und dunklen `icon`-/`logo`-Varianten im `brand/`-Ordner, wie von der aktuellen Home-Assistant- und HACS-Dokumentation fuer Custom Integrations vorgesehen
+
+## [0.4.11] - 2026-05-09
+
+### Changed
+
+- Ergaenzte fuer Cover und Radiometadaten einen Fallback auf den konfigurierten Ziel-Player, damit bei Music-Assistant-Weitergabe fehlende Bose-Artworks besser aus der eigentlichen Wiedergabequelle uebernommen werden koennen
+
+## [0.4.10] - 2026-05-09
+
+### Changed
+
+- Priorisierte in der Player-Darstellung echte `now_playing`-Metadaten wie Track, Artist und Album vor reinen Quellenlabels wie `AIRPLAY`, damit die Home-Assistant-Media-Karte die laufenden Inhalte sinnvoller anzeigt
+
+## [0.4.9] - 2026-05-09
+
+### Fixed
+
+- Korrigierte einen fehlenden `callback`-Import in `__init__.py`, der den Config-Flow mit `Invalid handler specified` blockierte
+
+## [0.4.8] - 2026-05-09
+
+### Fixed
+
+- Fuegte eine automatische Bereinigung fuer alte Bose-Device-Registry-Eintraege hinzu, damit fruehere Duplikate ohne stabilen Subentry-Identifier beim Setup von der Config Entry geloest werden koennen
+- Aktivierte die manuelle Geraeteloeschung fuer veraltete Bose-Registry-Eintraege im Home-Assistant-UI, damit verbliebene Altgeraete gezielt entfernt werden koennen
+
+## [0.4.7] - 2026-05-09
+
+### Fixed
+
+- Schaltete `turn_off` fuer SoundTouch-Geraete auf den lokal verifizierten `GET /standby`-Pfad um, nachdem das bisherige XML-POST auf deinem Bose mit `400 Bad Request` scheiterte
+
+## [0.4.6] - 2026-05-09
+
+### Fixed
+
+- Stellte die Device-Registry-Identifikation fuer Bose-Geraete auf einen stabilen, subentry-basierten Identifier um, damit Home Assistant nicht mehr zwischen IP- und Bose-Device-ID wechselt und dadurch doppelte Geraeteeintraege erzeugt
+- Liess alle Bose-Entities konsistent an demselben stabilen Geraet haengen, statt bei spaeter verfuegbaren Bose-Metadaten ein zweites Device zu erzeugen
+
+## [0.4.5] - 2026-05-09
+
+### Fixed
+
+- Haertete den Entry-Unload gegen teilweise oder fehlgeschlagene Plattform-Loads ab, damit Reloads nicht mehr mit `Config entry was never loaded!` scheitern
+- Stellte den internen Update-Listener auf das offizielle Home-Assistant-Reload fuer Config Entries um, statt den Entry manuell zu entladen und neu aufzubauen
+
+## [0.4.4] - 2026-05-09
+
+### Changed
+
+- Machte den Music-Assistant-Zielplayer im Bose-Geraete-Setup optional, damit das Bose-Geraet zuerst sauber als Home-Assistant-Entity angelegt werden kann
+- Liess die Preset-Router-Logik bewusst beim bestehenden Music-Assistant-/Media-Player-Routing und entfernte den zwischenzeitlich ausprobierten direkten lokalen Stream-Pfad wieder
+
+### Fixed
+
+- Verknuepfte Bose-Geraete explizit mit ihrem Config-Subentry, damit die erzeugten Entities im Home-Assistant-UI sauber unter dem passenden Untereintrag erscheinen
+- Bereinigte die Haupt-`media_player`-Benennung, damit keine doppelt zusammengesetzten Entity-Namen entstehen
+- Behandelte optionale SoundTouch-Endpunkte wie `zone` und `sources` toleranter, damit einzelne nicht unterstuetzte Bose-Endpunkte den gesamten Player nicht auf `nicht verfuegbar` ziehen
+
 ## [0.4.3] - 2026-05-09
 
 ### Fixed

@@ -37,10 +37,8 @@ class BosePresetSelect(
 
     @property
     def device_info(self) -> dict[str, Any]:
-        info = self.coordinator.data.get("info", {}) if self.coordinator.data else {}
-        device_id = str(info.get("device_id") or self.coordinator.bose_ip)
         return {
-            "identifiers": {(self.coordinator.entry.domain, device_id)},
+            "identifiers": {(self.coordinator.entry.domain, self.coordinator.registry_identifier)},
         }
 
     @property
@@ -109,10 +107,8 @@ class BosePresetButton(
 
     @property
     def device_info(self) -> dict[str, Any]:
-        info = self.coordinator.data.get("info", {}) if self.coordinator.data else {}
-        device_id = str(info.get("device_id") or self.coordinator.bose_ip)
         return {
-            "identifiers": {(self.coordinator.entry.domain, device_id)},
+            "identifiers": {(self.coordinator.entry.domain, self.coordinator.registry_identifier)},
         }
 
     async def async_press(self) -> None:

@@ -74,7 +74,7 @@
           "description": "Pick one of the discovered Bose devices and assign its playback target.",
           "data": {
             "discovered_device": "Discovered Bose device",
-            "ma_player": "Play on this Music Assistant player",
+            "ma_player": "Play on this Music Assistant player (optional)",
             "default_volume": "Preferred start volume in percent (optional)"
           }
         },
@@ -84,7 +84,7 @@
           "data": {
             "name": "Speaker name",
             "bose_ip": "Bose speaker IP address",
-            "ma_player": "Play on this Music Assistant player",
+            "ma_player": "Play on this Music Assistant player (optional)",
             "default_volume": "Preferred start volume in percent (optional)",
             "preset_1_enabled": "Use preset 1",
             "preset_1_volume": "Volume for preset 1 in percent (optional)",
@@ -142,7 +142,7 @@
           "data": {
             "name": "Speaker name",
             "bose_ip": "Bose speaker IP address",
-            "ma_player": "Play on this Music Assistant player",
+            "ma_player": "Play on this Music Assistant player (optional)",
             "default_volume": "Preferred start volume in percent (optional)",
             "preset_1_enabled": "Use preset 1",
             "preset_1_volume": "Volume for preset 1 in percent (optional)",
