@@ -1,7 +1,7 @@
 DOMAIN = "bose_preset_router"
 DATA_MANAGER = "manager"
 DATA_COORDINATORS = "coordinators"
-PLATFORMS = ["media_player", "select", "button"]
+PLATFORMS = ["media_player", "select", "button", "binary_sensor"]
 
 CONF_NOTIFY_ON_PRESS = "notify_on_press"
 CONF_DEBUG_LOGGING = "debug_logging"

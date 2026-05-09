@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.4.13] - 2026-05-09
+
+### Added
+
+- Fuegte zusaetzliche `binary_sensor`-Entities fuer `Preset 1` bis `Preset 6` hinzu, damit in Home Assistant sichtbar und fuer Dashboards nutzbar ist, welches Bose-Preset aktuell aktiv ist
+
 ## [0.4.12] - 2026-05-09
 
 ### Changed

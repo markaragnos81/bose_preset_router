@@ -12,6 +12,7 @@ Die Integration ist fuer Setups gedacht, in denen Bose-SoundTouch-Geraete nach d
   - per `play_preset`-Service
   - per Preset-`select`
   - per sechs Preset-Buttons pro Geraet
+  - per sechs Preset-Statussensoren zur Anzeige des aktuell aktiven Presets
 - Quellen-Browsing und Quellen-Auswahl im `media_player`
 - Multiroom-/Zonen-Services fuer Bose-SoundTouch-Geraete
 - Discovery-unterstuetztes Setup ueber SSDP und lokale Bose-API-Pruefung
@@ -122,6 +123,15 @@ Die Bose-Presets koennen in Home Assistant direkt ausgeloest werden:
 - ueber den Service `bose_preset_router.play_preset`
 - ueber ein Preset-`select` pro Geraet
 - ueber sechs Preset-Buttons pro Geraet
+
+Zusätzlich stellt die Integration sechs `binary_sensor`-Entities pro Geraet bereit, damit in Dashboards sichtbar ist, welches Preset aktuell aktiv ist:
+
+- `binary_sensor.<geraet>_preset_1_aktiv`
+- `binary_sensor.<geraet>_preset_2_aktiv`
+- `binary_sensor.<geraet>_preset_3_aktiv`
+- `binary_sensor.<geraet>_preset_4_aktiv`
+- `binary_sensor.<geraet>_preset_5_aktiv`
+- `binary_sensor.<geraet>_preset_6_aktiv`
 
 ### Multiroom / Zonen
 
