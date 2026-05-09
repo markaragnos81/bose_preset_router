@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.4.3] - 2026-05-09
+
+### Fixed
+
+- Sortierte die `manifest.json` wieder Hassfest-konform, damit die Integration in CI nicht mehr an der Manifest-Reihenfolge scheitert
+- Fuegte den Root-Titel in `strings.json` hinzu, damit die Home-Assistant-Stringdefinitionen auf dem aktuellen Erwartungsstand liegen
+
 ## [0.4.2] - 2026-05-09
 
 ### Changed
