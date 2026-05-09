@@ -1,12 +1,12 @@
 {
-  "title": "Bose Preset Router",
+  "title": "Bose SoundTouch LocalControl",
   "config": {
     "initiate_flow": {
       "reconfigure": "Globale Einstellungen bearbeiten"
     },
     "step": {
       "user": {
-        "title": "Bose Preset Router",
+        "title": "Bose SoundTouch LocalControl",
         "description": "Lege fest, wie sich die Integration insgesamt verhalten soll, inklusive Benachrichtigungen, Logging und der Pruefung der Stream-Uebergabe.",
         "data": {
           "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
@@ -19,7 +19,7 @@
         }
       },
       "reconfigure": {
-        "title": "Bose Preset Router",
+        "title": "Bose SoundTouch LocalControl",
         "description": "Passe Benachrichtigungen, Logging und die Wiederholungspruefung fuer eine zuverlaessige Stream-Uebergabe an.",
         "data": {
           "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",

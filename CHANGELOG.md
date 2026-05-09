@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.4.2] - 2026-05-09
+
+### Changed
+
+- Stellte das sichtbare Branding auf `Bose SoundTouch LocalControl` um, ohne den technischen Integrations-Domainnamen zu aendern
+- Aktualisierte README, HACS-Metadaten und die Benutzeroberflaechen-Titel auf den neuen Produktnamen
+- Ersetzte das bisherige, zu nah am Bose-Original orientierte Branding durch ein eigenstaendiges Icon- und Logo-Set
+
 ## [0.4.1] - 2026-05-09
 
 ### Changed

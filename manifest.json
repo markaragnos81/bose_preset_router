@@ -1,6 +1,6 @@
 {
   "domain": "bose_preset_router",
-  "name": "Bose Preset Router",
+  "name": "Bose SoundTouch LocalControl",
   "codeowners": ["@markaragnos81"],
   "config_flow": true,
   "documentation": "https://github.com/markaragnos81/bose_preset_router#readme",
@@ -12,5 +12,5 @@
   "requirements": [
     "websockets>=12.0"
   ],
-  "version": "0.4.1"
+  "version": "0.4.2"
 }

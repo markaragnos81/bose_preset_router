@@ -1,4 +1,4 @@
-# Bose Preset Router
+# Bose SoundTouch LocalControl
 
 Benutzerdefinierte Home-Assistant-Integration fuer Bose-SoundTouch-Geraete mit lokalem `media_player`, Preset-Steuerung, Multiroom-Funktionen und integrierter Preset-Router-Logik.
 
@@ -52,7 +52,7 @@ Die Integration ist fuer Setups gedacht, in denen Bose-SoundTouch-Geraete nach d
 2. Oeffne das Menue und waehle `Custom repositories`.
 3. Fuege die URL deines GitHub-Repositories hinzu.
 4. Kategorie: `Integration`.
-5. Suche in HACS nach `Bose Preset Router` und installiere die Integration.
+5. Suche in HACS nach `Bose SoundTouch LocalControl` und installiere die Integration.
 6. Starte Home Assistant neu.
 7. Fuege die Integration unter `Einstellungen -> Geraete & Dienste` hinzu.
 

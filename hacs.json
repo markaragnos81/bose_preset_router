@@ -1,5 +1,5 @@
 {
-  "name": "Bose Preset Router",
+  "name": "Bose SoundTouch LocalControl",
   "content_in_root": true,
   "homeassistant": "2025.1.0",
   "render_readme": true,

@@ -37,7 +37,7 @@ In Home Assistant:
 2. Open `Custom repositories`
 3. Add the GitHub repository URL
 4. Select category `Integration`
-5. Install `Bose Preset Router`
+5. Install `Bose SoundTouch LocalControl`
 
 ## Optional Next Step
 

@@ -775,7 +775,7 @@ class BosePresetRouterManager:
         if self.notify_on_press:
             persistent_notification.async_create(
                 self.hass,
-                title="Bose Preset Router Warnung",
+                title="Bose SoundTouch LocalControl Warnung",
                 message=(
                     f"Die Stream-Uebergabe konnte nicht bestaetigt werden.\n"
                     f"Bose device: {device_name}\n"

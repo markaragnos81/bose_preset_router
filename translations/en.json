@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Bose Preset Router",
+        "title": "Bose SoundTouch LocalControl",
         "description": "Choose how the integration should behave overall, including notifications, logging, and how carefully stream handoffs should be checked.",
         "data": {
           "notify_on_press": "Show a notification when a preset is pressed",
@@ -15,7 +15,7 @@
         }
       },
       "reconfigure": {
-        "title": "Bose Preset Router",
+        "title": "Bose SoundTouch LocalControl",
         "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs.",
         "data": {
           "notify_on_press": "Show a notification when a preset is pressed",

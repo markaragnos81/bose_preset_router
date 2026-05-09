@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`Bose Preset Router` bridges physical Bose SoundTouch preset buttons with Home Assistant and Music Assistant playback.
+`Bose SoundTouch LocalControl` bridges physical Bose SoundTouch preset buttons with Home Assistant and Music Assistant playback.
 
 Instead of letting the Bose speaker keep the original preset source locally, the integration can treat the preset press as a trigger and start a configured stream on another player.
 
