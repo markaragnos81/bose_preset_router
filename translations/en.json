@@ -30,6 +30,7 @@
     },
     "error": {
       "cannot_connect": "Could not connect to the Bose device. Check IP address and network access.",
+      "discovery_failed": "The discovered device selection is no longer valid. Refresh the list and try again.",
       "invalid_volume": "Enter a volume between 0 and 100 percent.",
       "ip_exists": "This Bose IP address is already assigned to another device.",
       "invalid_ip": "Enter a valid IPv4 or IPv6 address.",
@@ -37,6 +38,7 @@
       "ip_required": "Enter the IP address of the Bose device.",
       "name_exists": "A device with this name already exists.",
       "name_required": "Enter a device name.",
+      "no_devices_discovered": "No Bose devices were discovered on the network.",
       "no_enabled_presets": "Enable at least one preset.",
       "preset_url_required": "Enabled presets need a stream URL."
     },
@@ -57,7 +59,28 @@
       "step": {
         "user": {
           "title": "Add Bose device",
-          "description": "Connect one Bose speaker, choose where its presets should play, and decide which preset should start which stream.",
+          "description": "Choose whether to discover a Bose device on the network or enter its details manually.",
+          "data": {
+            "setup_method": "Setup method",
+            "discovered_device": "Discovered Bose device",
+            "name": "Speaker name",
+            "bose_ip": "Bose speaker IP address",
+            "ma_player": "Play on this Music Assistant player",
+            "default_volume": "Preferred start volume in percent (optional)"
+          }
+        },
+        "discover": {
+          "title": "Discover Bose device",
+          "description": "Pick one of the discovered Bose devices and assign its playback target.",
+          "data": {
+            "discovered_device": "Discovered Bose device",
+            "ma_player": "Play on this Music Assistant player",
+            "default_volume": "Preferred start volume in percent (optional)"
+          }
+        },
+        "manual": {
+          "title": "Add Bose device manually",
+          "description": "Enter the Bose speaker details and choose where its presets should play.",
           "data": {
             "name": "Speaker name",
             "bose_ip": "Bose speaker IP address",
@@ -199,6 +222,63 @@
         },
         "preset": {
           "name": "Preset number"
+        }
+      }
+    },
+    "play_preset": {
+      "name": "Play Bose preset",
+      "description": "Trigger one of the Bose device presets directly on the speaker.",
+      "fields": {
+        "device": {
+          "name": "Device name"
+        },
+        "preset": {
+          "name": "Preset number"
+        }
+      }
+    },
+    "create_zone": {
+      "name": "Create zone",
+      "description": "Create a Bose multi-room zone with one master speaker and one or more member speakers.",
+      "fields": {
+        "master": {
+          "name": "Master speaker"
+        },
+        "members": {
+          "name": "Member speakers"
+        }
+      }
+    },
+    "add_zone_members": {
+      "name": "Add zone members",
+      "description": "Add one or more Bose speakers to an existing multi-room zone.",
+      "fields": {
+        "master": {
+          "name": "Master speaker"
+        },
+        "members": {
+          "name": "Member speakers"
+        }
+      }
+    },
+    "remove_zone_members": {
+      "name": "Remove zone members",
+      "description": "Remove one or more Bose speakers from an existing multi-room zone.",
+      "fields": {
+        "master": {
+          "name": "Master speaker"
+        },
+        "members": {
+          "name": "Member speakers"
+        }
+      }
+    },
+    "clear_zone": {
+      "name": "Clear zone",
+      "description": "Remove all member speakers from a Bose multi-room zone, leaving only the master speaker.",
+      "fields": {
+        "master": {
+          "name": "Master speaker"
         }
       }
     }

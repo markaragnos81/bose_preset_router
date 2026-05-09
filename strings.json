@@ -20,7 +20,9 @@
       "name_required": "Enter a device name.",
       "no_enabled_presets": "Enable at least one preset.",
       "preset_url_required": "Enabled presets need a stream URL.",
-      "cannot_connect": "Could not connect to the Bose device. Check IP address and network access."
+      "cannot_connect": "Could not connect to the Bose device. Check IP address and network access.",
+      "no_devices_discovered": "No Bose devices were discovered on the network.",
+      "discovery_failed": "The discovered device selection is no longer valid. Refresh the list and try again."
     },
     "abort": {
       "single_instance_allowed": "Only one configuration is allowed",
@@ -39,7 +41,15 @@
       "step": {
         "user": {
           "title": "Add Bose device",
-          "description": "Connect one Bose speaker, choose where its presets should play, and decide which preset should start which stream."
+          "description": "Choose whether to discover a Bose device on the network or enter its details manually."
+        },
+        "discover": {
+          "title": "Discover Bose device",
+          "description": "Pick one of the discovered Bose devices and assign its playback target."
+        },
+        "manual": {
+          "title": "Add Bose device manually",
+          "description": "Enter the Bose speaker details and choose where its presets should play."
         },
         "reconfigure": {
           "title": "Edit Bose device",

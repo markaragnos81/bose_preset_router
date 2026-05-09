@@ -34,6 +34,7 @@
     },
     "error": {
       "cannot_connect": "Keine Verbindung zum Bose-Geraet moeglich. Bitte IP-Adresse und Netzwerk pruefen.",
+      "discovery_failed": "Die Auswahl des gefundenen Geraets ist nicht mehr gueltig. Aktualisiere die Liste und versuche es erneut.",
       "invalid_volume": "Gib eine Lautstaerke zwischen 0 und 100 Prozent ein.",
       "ip_exists": "Diese Bose-IP-Adresse ist bereits einem anderen Geraet zugewiesen.",
       "invalid_ip": "Gib eine gueltige IPv4- oder IPv6-Adresse ein.",
@@ -41,6 +42,7 @@
       "ip_required": "Gib die IP-Adresse des Bose-Geraets ein.",
       "name_exists": "Ein Geraet mit diesem Namen existiert bereits.",
       "name_required": "Gib einen Geraetenamen ein.",
+      "no_devices_discovered": "Es wurden keine Bose-Geraete im Netzwerk gefunden.",
       "no_enabled_presets": "Aktiviere mindestens ein Preset.",
       "preset_url_required": "Aktive Presets brauchen eine Stream-URL."
     },
@@ -60,7 +62,23 @@
       "step": {
         "user": {
           "title": "Bose-Geraet hinzufuegen",
-          "description": "Verbinde einen Bose-Lautsprecher, waehle das Wiedergabeziel und lege fest, welcher Stream bei welchem Preset starten soll.",
+          "description": "Waehle, ob ein Bose-Geraet im Netzwerk gesucht oder manuell eingetragen werden soll.",
+          "data": {
+            "setup_method": "Einrichtungsmethode"
+          }
+        },
+        "discover": {
+          "title": "Bose-Geraet finden",
+          "description": "Waehle eines der gefundenen Bose-Geraete und ordne das Wiedergabeziel zu.",
+          "data": {
+            "discovered_device": "Gefundenes Bose-Geraet",
+            "ma_player": "Auf diesem Music-Assistant-Player abspielen",
+            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)"
+          }
+        },
+        "manual": {
+          "title": "Bose-Geraet manuell hinzufuegen",
+          "description": "Trage die Bose-Geraetedaten ein und waehle, wo die Presets abgespielt werden sollen.",
           "data": {
             "name": "Name des Lautsprechers",
             "bose_ip": "IP-Adresse des Bose-Lautsprechers",
@@ -202,6 +220,63 @@
         },
         "preset": {
           "name": "Preset-Nummer"
+        }
+      }
+    },
+    "play_preset": {
+      "name": "Bose-Preset abspielen",
+      "description": "Loest eines der Bose-Presets direkt auf dem Lautsprecher aus.",
+      "fields": {
+        "device": {
+          "name": "Geraetename"
+        },
+        "preset": {
+          "name": "Preset-Nummer"
+        }
+      }
+    },
+    "create_zone": {
+      "name": "Zone erstellen",
+      "description": "Erstellt eine Bose-Multiroom-Zone mit einem Master-Lautsprecher und einem oder mehreren Mitgliedern.",
+      "fields": {
+        "master": {
+          "name": "Master-Lautsprecher"
+        },
+        "members": {
+          "name": "Mitgliedslautsprecher"
+        }
+      }
+    },
+    "add_zone_members": {
+      "name": "Zonenmitglieder hinzufuegen",
+      "description": "Fuegt einer bestehenden Bose-Multiroom-Zone einen oder mehrere Lautsprecher hinzu.",
+      "fields": {
+        "master": {
+          "name": "Master-Lautsprecher"
+        },
+        "members": {
+          "name": "Mitgliedslautsprecher"
+        }
+      }
+    },
+    "remove_zone_members": {
+      "name": "Zonenmitglieder entfernen",
+      "description": "Entfernt einen oder mehrere Bose-Lautsprecher aus einer bestehenden Multiroom-Zone.",
+      "fields": {
+        "master": {
+          "name": "Master-Lautsprecher"
+        },
+        "members": {
+          "name": "Mitgliedslautsprecher"
+        }
+      }
+    },
+    "clear_zone": {
+      "name": "Zone leeren",
+      "description": "Entfernt alle Mitgliedslautsprecher aus einer Bose-Multiroom-Zone, so dass nur der Master bleibt.",
+      "fields": {
+        "master": {
+          "name": "Master-Lautsprecher"
         }
       }
     }

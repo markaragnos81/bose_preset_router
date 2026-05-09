@@ -13,3 +13,62 @@ trigger_preset:
           min: 1
           max: 6
           mode: box
+play_preset:
+  name: Play Bose preset
+  description: Trigger one of the Bose device presets directly on the speaker.
+  fields:
+    device:
+      required: true
+      selector:
+        text:
+    preset:
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 6
+          mode: box
+create_zone:
+  name: Create zone
+  description: Create a Bose multi-room zone with one master speaker and one or more member speakers.
+  fields:
+    master:
+      required: true
+      selector:
+        text:
+    members:
+      required: true
+      selector:
+        object:
+add_zone_members:
+  name: Add zone members
+  description: Add one or more Bose speakers to an existing multi-room zone.
+  fields:
+    master:
+      required: true
+      selector:
+        text:
+    members:
+      required: true
+      selector:
+        object:
+remove_zone_members:
+  name: Remove zone members
+  description: Remove one or more Bose speakers from an existing multi-room zone.
+  fields:
+    master:
+      required: true
+      selector:
+        text:
+    members:
+      required: true
+      selector:
+        object:
+clear_zone:
+  name: Clear zone
+  description: Remove all member speakers from a Bose multi-room zone, leaving only the master speaker.
+  fields:
+    master:
+      required: true
+      selector:
+        text:

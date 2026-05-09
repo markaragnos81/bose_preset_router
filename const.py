@@ -1,4 +1,7 @@
 DOMAIN = "bose_preset_router"
+DATA_MANAGER = "manager"
+DATA_COORDINATORS = "coordinators"
+PLATFORMS = ["media_player", "select", "button"]
 
 CONF_NOTIFY_ON_PRESS = "notify_on_press"
 CONF_DEBUG_LOGGING = "debug_logging"
@@ -15,8 +18,15 @@ CONF_DEFAULT_VOLUME = "default_volume"
 
 ATTR_DEVICE = "device"
 ATTR_PRESET = "preset"
+ATTR_MASTER = "master"
+ATTR_MEMBERS = "members"
 
 SERVICE_TRIGGER_PRESET = "trigger_preset"
+SERVICE_PLAY_PRESET = "play_preset"
+SERVICE_CREATE_ZONE = "create_zone"
+SERVICE_ADD_ZONE_MEMBERS = "add_zone_members"
+SERVICE_REMOVE_ZONE_MEMBERS = "remove_zone_members"
+SERVICE_CLEAR_ZONE = "clear_zone"
 
 DEFAULT_NOTIFY_ON_PRESS = False
 DEFAULT_DEBUG_LOGGING = False
@@ -25,6 +35,7 @@ DEFAULT_PLAYBACK_VERIFY_ATTEMPTS = 3
 DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS = 1.5
 DEFAULT_STRICT_BOSE_CONFIRMATION = True
 DEFAULT_TOLERANT_BOSE_CONFIRMATION = False
+DEFAULT_COORDINATOR_REFRESH_SECONDS = 30
 
 WS_PORT = 8080
 SUBENTRY_TYPE_DEVICE = "device"

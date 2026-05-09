@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from ipaddress import ip_address
+from typing import Any
 from urllib.parse import urlparse
 
 import asyncio
@@ -8,11 +9,13 @@ import voluptuous as vol
 import websockets
 
 from homeassistant import config_entries
+from homeassistant.components import ssdp
 from homeassistant.const import CONF_NAME
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
 from homeassistant.helpers import selector
 
+from .api import BoseSoundTouchApi
 from .const import (
     CONF_BOSE_IP,
     CONF_DEBUG_LOGGING,
@@ -39,6 +42,12 @@ from .const import (
     preset_url_key,
     preset_volume_key,
 )
+
+DISCOVERY_SETUP_METHOD = "discover"
+MANUAL_SETUP_METHOD = "manual"
+ATTR_SETUP_METHOD = "setup_method"
+ATTR_DISCOVERED_DEVICE = "discovered_device"
+SSDP_MEDIA_RENDERER_ST = "urn:schemas-upnp-org:device:MediaRenderer:1"
 
 
 def global_schema() -> vol.Schema:
@@ -82,6 +91,28 @@ def _volume_selector() -> selector.NumberSelector:
             mode=selector.NumberSelectorMode.BOX,
             unit_of_measurement="%",
         )
+    )
+
+
+def device_setup_method_schema() -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(ATTR_SETUP_METHOD, default=DISCOVERY_SETUP_METHOD): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=[
+                        selector.SelectOptionDict(
+                            value=DISCOVERY_SETUP_METHOD,
+                            label="Discover Bose devices on the network",
+                        ),
+                        selector.SelectOptionDict(
+                            value=MANUAL_SETUP_METHOD,
+                            label="Enter device details manually",
+                        ),
+                    ],
+                    mode=selector.SelectSelectorMode.LIST,
+                )
+            )
+        }
     )
 
 
@@ -264,6 +295,48 @@ async def _async_validate_device_connection(host: str) -> bool:
     return True
 
 
+async def _async_discover_bose_devices(
+    hass,
+    existing_devices: list[config_entries.ConfigSubentry | dict],
+) -> list[dict[str, str]]:
+    normalized_devices = _normalize_existing_devices(existing_devices)
+    existing_ips = {str(device[CONF_BOSE_IP]) for device in normalized_devices if CONF_BOSE_IP in device}
+
+    discovery_infos = await ssdp.async_get_discovery_info_by_st(hass, SSDP_MEDIA_RENDERER_ST)
+    discovered: dict[str, dict[str, str]] = {}
+    for discovery_info in discovery_infos:
+        manufacturer = str(discovery_info.get("manufacturer") or "")
+        friendly_name = str(discovery_info.get("friendlyName") or discovery_info.get("friendly_name") or "")
+        if "bose" not in manufacturer.casefold() and "soundtouch" not in friendly_name.casefold():
+            continue
+
+        location = str(discovery_info.get("ssdp_location") or discovery_info.get("location") or "")
+        host = urlparse(location).hostname
+        if not host or host in existing_ips:
+            continue
+
+        try:
+            ip_address(host)
+        except ValueError:
+            continue
+
+        try:
+            api = BoseSoundTouchApi(hass, host=host, device_name=friendly_name or host)
+            info = await api.async_get_info()
+        except Exception:
+            continue
+
+        device_id = str(info.get("device_id") or discovery_info.get("udn") or host)
+        discovered[device_id] = {
+            "device_id": device_id,
+            CONF_NAME: str(info.get("name") or friendly_name or host),
+            CONF_BOSE_IP: host,
+            "label": f"{str(info.get('name') or friendly_name or host)} ({host})",
+        }
+
+    return sorted(discovered.values(), key=lambda item: item["label"].casefold())
+
+
 class BosePresetRouterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
@@ -309,6 +382,8 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     def __init__(self) -> None:
         self._pending_user_input: dict = {}
         self._reconfigure_subentry = None
+        self._discovered_devices: list[dict[str, str]] = []
+        self._setup_method = MANUAL_SETUP_METHOD
 
     def _device_defaults(self, entry: config_entries.ConfigEntry, subentry=None) -> dict:
         base = _default_device_suggestions()
@@ -323,6 +398,28 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
             for key in (CONF_NAME, CONF_BOSE_IP, CONF_MA_PLAYER, CONF_DEFAULT_VOLUME)
             if key in data
         }
+
+    def _discovered_device_schema(self) -> vol.Schema:
+        return vol.Schema(
+            {
+                vol.Required(ATTR_DISCOVERED_DEVICE): selector.SelectSelector(
+                    selector.SelectSelectorConfig(
+                        options=[
+                            selector.SelectOptionDict(
+                                value=device["device_id"],
+                                label=device["label"],
+                            )
+                            for device in self._discovered_devices
+                        ],
+                        mode=selector.SelectSelectorMode.DROPDOWN,
+                    )
+                ),
+                vol.Required(CONF_MA_PLAYER): selector.EntitySelector(
+                    selector.EntitySelectorConfig(domain="media_player")
+                ),
+                vol.Optional(CONF_DEFAULT_VOLUME): _volume_selector(),
+            }
+        )
 
     @staticmethod
     def _preset_fields(data: dict, presets: tuple[int, ...]) -> dict:
@@ -361,13 +458,74 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
     async def async_step_user(self, user_input=None) -> FlowResult:
         if user_input is not None:
-            self._pending_user_input = user_input
-            return await self.async_step_presets_a()
+            self._setup_method = user_input[ATTR_SETUP_METHOD]
+            if user_input[ATTR_SETUP_METHOD] == DISCOVERY_SETUP_METHOD:
+                return await self.async_step_discover()
+            return await self.async_step_manual()
 
         self._pending_user_input = {}
         return self.async_show_form(
             step_id="user",
-            data_schema=self.add_suggested_values_to_schema(device_basic_schema(), {}),
+            data_schema=self.add_suggested_values_to_schema(device_setup_method_schema(), {}),
+            errors={},
+        )
+
+    async def async_step_discover(self, user_input=None) -> FlowResult:
+        entry = self._get_entry()
+        self._setup_method = DISCOVERY_SETUP_METHOD
+
+        if user_input is not None:
+            selected = next(
+                (
+                    device
+                    for device in self._discovered_devices
+                    if device["device_id"] == user_input[ATTR_DISCOVERED_DEVICE]
+                ),
+                None,
+            )
+            if selected is None:
+                return self.async_show_form(
+                    step_id="discover",
+                    data_schema=self._discovered_device_schema(),
+                    errors={"base": "discovery_failed"},
+                )
+
+            self._pending_user_input = {
+                CONF_NAME: selected[CONF_NAME],
+                CONF_BOSE_IP: selected[CONF_BOSE_IP],
+                CONF_MA_PLAYER: user_input[CONF_MA_PLAYER],
+            }
+            if CONF_DEFAULT_VOLUME in user_input:
+                self._pending_user_input[CONF_DEFAULT_VOLUME] = user_input[CONF_DEFAULT_VOLUME]
+            return await self.async_step_presets_a()
+
+        self._discovered_devices = await _async_discover_bose_devices(self.hass, list(entry.subentries.values()))
+        if not self._discovered_devices:
+            return self.async_show_form(
+                step_id="user",
+                data_schema=self.add_suggested_values_to_schema(
+                    device_setup_method_schema(),
+                    {ATTR_SETUP_METHOD: DISCOVERY_SETUP_METHOD},
+                ),
+                errors={"base": "no_devices_discovered"},
+            )
+
+        return self.async_show_form(
+            step_id="discover",
+            data_schema=self.add_suggested_values_to_schema(self._discovered_device_schema(), {}),
+            errors={},
+        )
+
+    async def async_step_manual(self, user_input=None) -> FlowResult:
+        self._setup_method = MANUAL_SETUP_METHOD
+        if user_input is not None:
+            self._pending_user_input = user_input
+            return await self.async_step_presets_a()
+
+        defaults = self._basic_fields(self._pending_user_input)
+        return self.async_show_form(
+            step_id="manual",
+            data_schema=self.add_suggested_values_to_schema(device_basic_schema(), defaults),
             errors={},
         )
 
@@ -414,7 +572,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
             if basic_errors:
                 return self.async_show_form(
-                    step_id="user",
+                    step_id="manual",
                     data_schema=self.add_suggested_values_to_schema(
                         device_basic_schema(),
                         self._basic_fields(normalized_input),

@@ -4,7 +4,6 @@ import asyncio
 import logging
 import re
 import time
-import xml.etree.ElementTree as ET
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
@@ -13,8 +12,8 @@ from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
+from .api import BoseSoundTouchApi
 from .const import (
     CONF_BOSE_IP,
     CONF_DEBUG_LOGGING,
@@ -27,6 +26,8 @@ from .const import (
     CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
     CONF_STRICT_BOSE_CONFIRMATION,
     CONF_TOLERANT_BOSE_CONFIRMATION,
+    DATA_COORDINATORS,
+    DOMAIN,
     DEFAULT_PLAYBACK_VERIFY_ATTEMPTS,
     DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS,
     DEFAULT_STRICT_BOSE_CONFIRMATION,
@@ -180,6 +181,15 @@ class BosePresetRouterManager:
             None,
         )
 
+    def _soundtouch_api(self, *, bose_ip: str, device_name: str) -> BoseSoundTouchApi:
+        entry_data = self.hass.data.get(DOMAIN, {}).get(self.entry.entry_id, {})
+        coordinators = entry_data.get(DATA_COORDINATORS, {})
+        for coordinator in coordinators.values():
+            if coordinator.bose_ip == bose_ip:
+                return coordinator.api
+
+        return BoseSoundTouchApi(self.hass, host=bose_ip, device_name=device_name)
+
     def _log_stage(
         self,
         level: int,
@@ -318,42 +328,30 @@ class BosePresetRouterManager:
         return False, match_reason
 
     async def _async_fetch_bose_now_playing(self, bose_ip: str) -> dict[str, str] | None:
-        session = async_get_clientsession(self.hass)
-        url = f"http://{bose_ip}:8090/now_playing"
-
         try:
-            async with session.get(url, timeout=5) as response:
-                response.raise_for_status()
-                payload = await response.text()
+            device = next(
+                (candidate for candidate in self.devices if candidate.get(CONF_BOSE_IP) == bose_ip),
+                None,
+            )
+            api = self._soundtouch_api(
+                bose_ip=bose_ip,
+                device_name=str(device.get(CONF_NAME, bose_ip)) if device else bose_ip,
+            )
+            state = await api.async_get_now_playing()
         except Exception as err:
             _LOGGER.warning("Failed to fetch Bose now_playing from %s: %s", bose_ip, err)
             return None
 
-        try:
-            root = ET.fromstring(payload)
-        except ET.ParseError as err:
-            _LOGGER.warning("Invalid Bose now_playing XML from %s: %s", bose_ip, err)
-            return None
-
-        content_item = root.find("ContentItem")
         return {
-            "source": root.attrib.get("source", ""),
-            "source_account": root.attrib.get("sourceAccount", ""),
-            "item_name": root.findtext("itemName", default=""),
-            "track": root.findtext("track", default=""),
-            "artist": root.findtext("artist", default=""),
-            "album": root.findtext("album", default=""),
-            "station_name": root.findtext("stationName", default=""),
-            "location": (
-                content_item.attrib.get("location", "")
-                if content_item is not None
-                else ""
-            ),
-            "source_type": (
-                content_item.attrib.get("source", "")
-                if content_item is not None
-                else ""
-            ),
+            "source": str(state.get("source", "")),
+            "source_account": str(state.get("source_account", "")),
+            "item_name": str(state.get("item_name", "")),
+            "track": str(state.get("track", "")),
+            "artist": str(state.get("artist", "")),
+            "album": str(state.get("album", "")),
+            "station_name": str(state.get("station_name", "")),
+            "location": str(state.get("location", "")),
+            "source_type": str(state.get("source_type", "")),
         }
 
     async def _async_confirm_bose_preset(
