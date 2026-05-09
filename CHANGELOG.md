@@ -8,6 +8,20 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.4.0] - 2026-05-09
+
+### Added
+
+- A new local SoundTouch foundation with shared Bose API access, device coordinators, and a first full `media_player` implementation
+- Home Assistant controls for Bose presets via `play_preset`, preset select entities, and six preset buttons per device
+- Bose source browsing and source selection support in the `media_player`
+- Bose multi-room zone services for creating zones, adding members, removing members, and clearing a zone
+- Discovery-assisted device setup using Home Assistant SSDP results with Bose API confirmation
+
+### Changed
+
+- Integrated the original preset-router workflow into the broader SoundTouch architecture so routing and direct device control share the same Bose state foundation
+
 ## [0.3.6] - 2026-04-10
 
 ### Fixed
