@@ -32,7 +32,6 @@ from .const import (
     DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS,
     DEFAULT_STRICT_BOSE_CONFIRMATION,
     DEFAULT_TOLERANT_BOSE_CONFIRMATION,
-    DOMAIN,
     PRESET_IDS,
     WS_PORT,
     preset_enabled_key,
@@ -62,76 +61,36 @@ class BosePresetRouterManager:
         self._stop_event = asyncio.Event()
         self._last_trigger: dict[str, float] = {}
 
+    def _option(self, key: str, default: Any) -> Any:
+        return self.entry.options.get(key, self.entry.data.get(key, default))
+
     @property
     def notify_on_press(self) -> bool:
-        return self.entry.options.get(
-            CONF_NOTIFY_ON_PRESS,
-            self.entry.data.get(CONF_NOTIFY_ON_PRESS, False),
-        )
+        return bool(self._option(CONF_NOTIFY_ON_PRESS, False))
 
     @property
     def debug_logging(self) -> bool:
-        return self.entry.options.get(
-            CONF_DEBUG_LOGGING,
-            self.entry.data.get(CONF_DEBUG_LOGGING, False),
-        )
+        return bool(self._option(CONF_DEBUG_LOGGING, False))
 
     @property
     def debounce_seconds(self) -> float:
-        return float(
-            self.entry.options.get(
-                CONF_DEBOUNCE_SECONDS,
-                self.entry.data.get(CONF_DEBOUNCE_SECONDS, 2.0),
-            )
-        )
+        return float(self._option(CONF_DEBOUNCE_SECONDS, 2.0))
 
     @property
     def playback_verify_attempts(self) -> int:
-        return int(
-            self.entry.options.get(
-                CONF_PLAYBACK_VERIFY_ATTEMPTS,
-                self.entry.data.get(
-                    CONF_PLAYBACK_VERIFY_ATTEMPTS,
-                    DEFAULT_PLAYBACK_VERIFY_ATTEMPTS,
-                ),
-            )
-        )
+        return int(self._option(CONF_PLAYBACK_VERIFY_ATTEMPTS, DEFAULT_PLAYBACK_VERIFY_ATTEMPTS))
 
     @property
     def playback_verify_delay_seconds(self) -> float:
-        return float(
-            self.entry.options.get(
-                CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
-                self.entry.data.get(
-                    CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
-                    DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS,
-                ),
-            )
-        )
+        return float(self._option(CONF_PLAYBACK_VERIFY_DELAY_SECONDS, DEFAULT_PLAYBACK_VERIFY_DELAY_SECONDS))
 
     @property
     def strict_bose_confirmation(self) -> bool:
-        return bool(
-            self.entry.options.get(
-                CONF_STRICT_BOSE_CONFIRMATION,
-                self.entry.data.get(
-                    CONF_STRICT_BOSE_CONFIRMATION,
-                    DEFAULT_STRICT_BOSE_CONFIRMATION,
-                ),
-            )
-        )
+        return bool(self._option(CONF_STRICT_BOSE_CONFIRMATION, DEFAULT_STRICT_BOSE_CONFIRMATION))
 
     @property
     def tolerant_bose_confirmation(self) -> bool:
-        return bool(
-            self.entry.options.get(
-                CONF_TOLERANT_BOSE_CONFIRMATION,
-                self.entry.data.get(
-                    CONF_TOLERANT_BOSE_CONFIRMATION,
-                    DEFAULT_TOLERANT_BOSE_CONFIRMATION,
-                ),
-            )
-        )
+        return bool(self._option(CONF_TOLERANT_BOSE_CONFIRMATION, DEFAULT_TOLERANT_BOSE_CONFIRMATION))
 
     @property
     def devices(self) -> list[dict[str, Any]]:
@@ -181,14 +140,17 @@ class BosePresetRouterManager:
             None,
         )
 
-    def _soundtouch_api(self, *, bose_ip: str, device_name: str) -> BoseSoundTouchApi:
+    def _get_coordinator(self, bose_ip: str):
         entry_data = self.hass.data.get(DOMAIN, {}).get(self.entry.entry_id, {})
         coordinators = entry_data.get(DATA_COORDINATORS, {})
-        for coordinator in coordinators.values():
-            if coordinator.bose_ip == bose_ip:
-                return coordinator.api
+        return next(
+            (coordinator for coordinator in coordinators.values() if coordinator.bose_ip == bose_ip),
+            None,
+        )
 
-        return BoseSoundTouchApi(self.hass, host=bose_ip, device_name=device_name)
+    def _soundtouch_api(self, *, bose_ip: str, device_name: str) -> BoseSoundTouchApi:
+        coordinator = self._get_coordinator(bose_ip)
+        return coordinator.api if coordinator is not None else BoseSoundTouchApi(self.hass, host=bose_ip, device_name=device_name)
 
     def _log_stage(
         self,
@@ -503,6 +465,10 @@ class BosePresetRouterManager:
 
                         if self.debug_logging:
                             _LOGGER.debug("Raw websocket message for %s: %s", name, message)
+
+                        coordinator = self._get_coordinator(bose_ip)
+                        if coordinator is not None:
+                            self.hass.async_create_task(coordinator.async_request_refresh())
 
                         if "nowSelectionUpdated" not in message or "<preset id=" not in message:
                             continue

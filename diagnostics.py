@@ -48,7 +48,6 @@ async def async_get_config_entry_diagnostics(
                 {
                     "device_name": coordinator.device_name,
                     "last_update_success": coordinator.last_update_success,
-                    "last_websocket_message": coordinator.last_websocket_message,
                     "data": coordinator.data,
                 },
                 TO_REDACT,

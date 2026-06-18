@@ -4,10 +4,9 @@ import asyncio
 import logging
 from xml.sax.saxutils import escape
 import xml.etree.ElementTree as ET
-from collections.abc import Awaitable, Callable
 from typing import Any
 
-import websockets
+import aiohttp
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
@@ -26,7 +25,7 @@ class BoseSoundTouchApi:
         session = async_get_clientsession(self.hass)
         url = f"http://{self.host}:8090/{path.lstrip('/')}"
 
-        async with session.get(url, timeout=5) as response:
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as response:
             response.raise_for_status()
             payload = await response.text()
 
@@ -36,7 +35,7 @@ class BoseSoundTouchApi:
         session = async_get_clientsession(self.hass)
         url = f"http://{self.host}:8090/{path.lstrip('/')}"
 
-        async with session.get(url, timeout=5) as response:
+        async with session.get(url, timeout=aiohttp.ClientTimeout(total=5)) as response:
             response.raise_for_status()
             return await response.text()
 
@@ -47,7 +46,7 @@ class BoseSoundTouchApi:
         async with session.post(
             url,
             data=body.encode("utf-8"),
-            timeout=5,
+            timeout=aiohttp.ClientTimeout(total=5),
             headers={"Content-Type": "application/xml"},
         ) as response:
             response.raise_for_status()
@@ -313,40 +312,3 @@ class BoseSoundTouchApi:
             "zone": zone,
         }
 
-    async def async_listen_websocket(
-        self,
-        *,
-        stop_event: asyncio.Event,
-        message_callback: Callable[[str], Awaitable[None] | None],
-    ) -> None:
-        url = f"ws://{self.host}:{WS_PORT}/"
-
-        while not stop_event.is_set():
-            try:
-                _LOGGER.info(
-                    "Connecting SoundTouch websocket for %s (%s)",
-                    self.device_name,
-                    self.host,
-                )
-                async with websockets.connect(url, subprotocols=["gabbo"]) as ws:
-                    _LOGGER.info("Connected SoundTouch websocket for %s", self.device_name)
-                    async for message in ws:
-                        if stop_event.is_set():
-                            return
-                        if not isinstance(message, str):
-                            continue
-                        result = message_callback(message)
-                        if isinstance(result, Awaitable):
-                            await result
-            except asyncio.CancelledError:
-                raise
-            except Exception as err:
-                if stop_event.is_set():
-                    return
-                _LOGGER.warning(
-                    "SoundTouch websocket error for %s (%s): %s",
-                    self.device_name,
-                    self.host,
-                    err,
-                )
-                await asyncio.sleep(3)

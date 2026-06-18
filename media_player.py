@@ -73,6 +73,10 @@ class BoseSoundTouchMediaPlayer(
         self._attr_unique_id = f"{coordinator.entry.entry_id}_{coordinator_id}_media_player"
 
     @property
+    def _data(self) -> dict[str, Any]:
+        return self.coordinator.data or {}
+
+    @property
     def available(self) -> bool:
         return super().available and bool(self.coordinator.data)
 
@@ -81,7 +85,7 @@ class BoseSoundTouchMediaPlayer(
         if not self.coordinator.last_update_success and not self.coordinator.data:
             return STATE_UNAVAILABLE
 
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         source = str(now_playing.get("source", "")).upper()
         play_status = str(now_playing.get("play_status", "")).upper()
 
@@ -98,7 +102,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def volume_level(self) -> float | None:
-        volume = self.coordinator.data.get("volume", {}) if self.coordinator.data else {}
+        volume = self._data.get("volume", {})
         actual = volume.get("actual")
         if actual is None:
             return None
@@ -106,13 +110,13 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def is_volume_muted(self) -> bool | None:
-        volume = self.coordinator.data.get("volume", {}) if self.coordinator.data else {}
+        volume = self._data.get("volume", {})
         muted = volume.get("muted")
         return bool(muted) if muted is not None else None
 
     @property
     def media_title(self) -> str | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         now_playing_title = self._now_playing_title(now_playing)
         if now_playing_title:
             return now_playing_title
@@ -129,7 +133,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def media_artist(self) -> str | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         return (
             str(now_playing.get("artist") or "")
             or str(now_playing.get("source") or "")
@@ -138,7 +142,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def media_album_name(self) -> str | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         return (
             str(now_playing.get("album") or "")
             or str(now_playing.get("station_name") or "")
@@ -148,7 +152,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def media_image_url(self) -> str | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         current_preset = self._current_preset
         return (
             str(now_playing.get("image") or "").strip()
@@ -187,7 +191,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def media_channel(self) -> str | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         return (
             str(now_playing.get("station_name") or "")
             or str(now_playing.get("album") or "")
@@ -205,7 +209,7 @@ class BoseSoundTouchMediaPlayer(
         if current_source is not None:
             return self._source_label(current_source)
 
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         current_source_name = str(now_playing.get("source") or "")
         if not current_source_name:
             return None
@@ -214,7 +218,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def _has_rich_now_playing_metadata(self) -> bool:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         return any(
             str(now_playing.get(field) or "").strip()
             for field in ("track", "item_name", "artist", "album", "station_name", "description")
@@ -246,9 +250,9 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
-        zone = self.coordinator.data.get("zone", {}) if self.coordinator.data else {}
-        info = self.coordinator.data.get("info", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
+        zone = self._data.get("zone", {})
+        info = self._data.get("info", {})
         return {
             "bose_ip": self.coordinator.bose_ip,
             "bose_source": now_playing.get("source"),
@@ -267,7 +271,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def device_info(self) -> dict[str, Any]:
-        info = self.coordinator.data.get("info", {}) if self.coordinator.data else {}
+        info = self._data.get("info", {})
         model = str(info.get("type") or "") or None
         return {
             "identifiers": {(self.coordinator.entry.domain, self.coordinator.registry_identifier)},
@@ -279,24 +283,24 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def _presets(self) -> list[dict[str, Any]]:
-        return list(self.coordinator.data.get("presets", []) if self.coordinator.data else [])
+        return list(self._data.get("presets", []))
 
     @property
     def _sources(self) -> list[dict[str, Any]]:
-        return list(self.coordinator.data.get("sources", []) if self.coordinator.data else [])
+        return list(self._data.get("sources", []))
 
     @property
     def _device_id(self) -> str:
-        info = self.coordinator.data.get("info", {}) if self.coordinator.data else {}
+        info = self._data.get("info", {})
         return str(info.get("device_id") or self.coordinator.bose_ip)
 
     @property
     def _zone(self) -> dict[str, Any]:
-        return dict(self.coordinator.data.get("zone", {}) if self.coordinator.data else {})
+        return dict(self._data.get("zone", {}))
 
     @property
     def _current_preset(self) -> dict[str, Any] | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         current_location = str(now_playing.get("location") or "")
         current_source = str(now_playing.get("source") or "")
         current_item_name = str(now_playing.get("item_name") or "")
@@ -315,7 +319,7 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def _current_source_item(self) -> dict[str, Any] | None:
-        now_playing = self.coordinator.data.get("now_playing", {}) if self.coordinator.data else {}
+        now_playing = self._data.get("now_playing", {})
         current_source = str(now_playing.get("source") or "")
         current_source_account = str(now_playing.get("source_account") or "")
         for source in self._sources:
