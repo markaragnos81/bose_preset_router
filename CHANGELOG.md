@@ -8,6 +8,26 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.5.1] - 2026-05-10
+
+### Changed
+
+- Entfernte die dunklen Brand-Assets `dark_icon.png` und `dark_logo.png`, so dass nur noch das helle Logo-Set fuer die Integration verwendet wird
+
+## [0.5.0] - 2026-05-10
+
+### Changed
+
+- Ueberarbeitete den kompletten Bose-Geraete-Setup-Dialog mit Quick- und Expertenmodus, separaten Schritten fuer Geraet, Routing, Presets, erweiterte Optionen und Zusammenfassung
+- Trennt die reine Bose-Geraeteanlage jetzt klarer von der optionalen Preset-Weiterleitung an Music Assistant oder andere Home-Assistant-Player
+- Ersetzt die bisherigen zwei Preset-Unterseiten durch eine gemeinsame Preset-Uebersicht fuer alle sechs Presets
+- Fuegt vor dem Speichern eine echte Zusammenfassung mit Geraet, Modell, Bose-ID, Routingziel, aktiven Presets und Hinweisen hinzu
+
+### Fixed
+
+- Reparierte die Bose-Autodiscovery fuer aktuelle Home-Assistant-SSDP-Objekte, indem der Config-Flow nicht mehr von Dictionary-Zugriffen auf `SsdpServiceInfo` ausgeht
+- Faengt SSDP-Discovery-Fehler im Setup-Dialog jetzt sauber ab, so dass statt `Unknown error occurred` ein normaler Formularfehler angezeigt wird
+
 ## [0.4.14] - 2026-05-09
 
 ### Changed
