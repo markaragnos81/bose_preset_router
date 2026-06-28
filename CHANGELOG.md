@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.14] - 2026-06-28
+
+### Fixed
+
+- Umlaute und Sonderzeichen in allen deutschen UI-Texten korrigiert (ä, ö, ü, ß statt ae, oe, ue, ss)
+- Reconfigure-Dialog zeigt jetzt in der Beschreibung einen Hinweis "Weiter → Standard-Stream-URLs", damit klar ist, dass nach OK ein zweiter Schritt mit den globalen Preset-URLs folgt
+
 ## [0.6.13] - 2026-06-28
 
 ### Changed

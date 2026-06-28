@@ -9,18 +9,18 @@
         "title": "Bose SoundTouch LocalControl",
         "description": "Lege fest, wie sich die Integration insgesamt verhalten soll.",
         "data": {
-          "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
-          "debug_logging": "Ausfuehrliches Logging aktivieren",
-          "debounce_seconds": "Wiederholte Tastendruecke fuer so viele Sekunden ignorieren",
-          "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
-          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
-          "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
-          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
+          "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrückt wird",
+          "debug_logging": "Ausführliches Logging aktivieren",
+          "debounce_seconds": "Wiederholte Tastendrücke für so viele Sekunden ignorieren",
+          "playback_verify_attempts": "Stream-Übergabe so oft erneut prüfen",
+          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Prüfungen warten",
+          "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestätigung fehlschlägt",
+          "tolerant_bose_confirmation": "Bose-Preset-Bestätigung toleranter auswerten"
         }
       },
       "global_presets": {
         "title": "Standard-Stream-URLs",
-        "description": "Hinterlege Standard-URLs fuer Presets 1–6. Diese gelten fuer alle Bose-Geraete und koennen pro Geraet ueberschrieben werden.",
+        "description": "Hinterlege Standard-URLs für Presets 1–6. Diese gelten für alle Bose-Geräte und können pro Gerät überschrieben werden.",
         "data": {
           "default_preset_1": "Standard-URL Preset 1",
           "default_preset_2": "Standard-URL Preset 2",
@@ -32,20 +32,20 @@
       },
       "reconfigure": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Passe Benachrichtigungen, Logging und die Wiederholungspruefung fuer eine zuverlaessige Stream-Uebergabe an.",
+        "description": "Passe Benachrichtigungen, Logging und die Wiederholungsprüfung für eine zuverlässige Stream-Übergabe an.\n\nWeiter → Standard-Stream-URLs",
         "data": {
-          "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
-          "debug_logging": "Ausfuehrliches Logging aktivieren",
-          "debounce_seconds": "Wiederholte Tastendruecke fuer so viele Sekunden ignorieren",
-          "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
-          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
-          "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
-          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
+          "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrückt wird",
+          "debug_logging": "Ausführliches Logging aktivieren",
+          "debounce_seconds": "Wiederholte Tastendrücke für so viele Sekunden ignorieren",
+          "playback_verify_attempts": "Stream-Übergabe so oft erneut prüfen",
+          "playback_verify_delay_seconds": "So viele Sekunden zwischen den Prüfungen warten",
+          "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestätigung fehlschlägt",
+          "tolerant_bose_confirmation": "Bose-Preset-Bestätigung toleranter auswerten"
         }
       },
       "reconfigure_global_presets": {
         "title": "Standard-Stream-URLs",
-        "description": "Hinterlege Standard-URLs fuer Presets 1–6. Diese gelten fuer alle Bose-Geraete und koennen pro Geraet ueberschrieben werden.",
+        "description": "Hinterlege Standard-URLs für Presets 1–6. Diese gelten für alle Bose-Geräte und können pro Gerät überschrieben werden.",
         "data": {
           "default_preset_1": "Standard-URL Preset 1",
           "default_preset_2": "Standard-URL Preset 2",
@@ -57,16 +57,16 @@
       }
     },
     "error": {
-      "cannot_connect": "Keine Verbindung zum Bose-Geraet moeglich. Bitte IP-Adresse und Netzwerk pruefen.",
-      "discovery_failed": "Die Auswahl des gefundenen Geraets ist nicht mehr gueltig. Aktualisiere die Liste und versuche es erneut.",
-      "invalid_volume": "Gib eine Lautstaerke zwischen 0 und 100 Prozent ein.",
-      "ip_exists": "Diese Bose-IP-Adresse ist bereits einem anderen Geraet zugewiesen.",
-      "invalid_ip": "Gib eine gueltige IPv4- oder IPv6-Adresse ein.",
-      "invalid_url": "Gib eine gueltige URL inklusive Protokoll ein, zum Beispiel http://...",
-      "ip_required": "Gib die IP-Adresse des Bose-Geraets ein.",
-      "name_exists": "Ein Geraet mit diesem Namen existiert bereits.",
-      "name_required": "Gib einen Geraetenamen ein.",
-      "no_devices_discovered": "Es wurden keine Bose-Geraete im Netzwerk gefunden.",
+      "cannot_connect": "Keine Verbindung zum Bose-Gerät möglich. Bitte IP-Adresse und Netzwerk prüfen.",
+      "discovery_failed": "Die Auswahl des gefundenen Geräts ist nicht mehr gültig. Aktualisiere die Liste und versuche es erneut.",
+      "invalid_volume": "Gib eine Lautstärke zwischen 0 und 100 Prozent ein.",
+      "ip_exists": "Diese Bose-IP-Adresse ist bereits einem anderen Gerät zugewiesen.",
+      "invalid_ip": "Gib eine gültige IPv4- oder IPv6-Adresse ein.",
+      "invalid_url": "Gib eine gültige URL inklusive Protokoll ein, zum Beispiel http://...",
+      "ip_required": "Gib die IP-Adresse des Bose-Geräts ein.",
+      "name_exists": "Ein Gerät mit diesem Namen existiert bereits.",
+      "name_required": "Gib einen Gerätenamen ein.",
+      "no_devices_discovered": "Es wurden keine Bose-Geräte im Netzwerk gefunden.",
       "no_enabled_presets": "Aktiviere mindestens ein Preset.",
       "preset_url_required": "Aktive Presets brauchen eine Stream-URL."
     },
@@ -77,91 +77,91 @@
   },
   "config_subentries": {
     "device": {
-      "title": "Bose-Geraet",
+      "title": "Bose-Gerät",
       "flow_title": "{name}",
       "initiate_flow": {
-        "reconfigure": "Geraet bearbeiten",
-        "user": "Geraet hinzufuegen"
+        "reconfigure": "Gerät bearbeiten",
+        "user": "Gerät hinzufügen"
       },
       "step": {
         "user": {
-          "title": "Bose-Geraet hinzufuegen",
-          "description": "Waehle, wie das Bose-Geraet hinzugefuegt werden soll und ob du einen schnellen oder erweiterten Setup-Modus verwenden moechtest.",
+          "title": "Bose-Gerät hinzufügen",
+          "description": "Wähle, wie das Bose-Gerät hinzugefügt werden soll und ob du einen schnellen oder erweiterten Setup-Modus verwenden möchtest.",
           "data": {
             "setup_method": "Einrichtungsmethode",
             "setup_mode": "Setup-Modus"
           }
         },
         "discover": {
-          "title": "Bose-Geraet finden",
-          "description": "Waehle eines der gefundenen Bose-Geraete. Den angezeigten Geraetenamen kannst du bei Bedarf vor dem Fortfahren anpassen.",
+          "title": "Bose-Gerät finden",
+          "description": "Wähle eines der gefundenen Bose-Geräte. Den angezeigten Gerätenamen kannst du bei Bedarf vor dem Fortfahren anpassen.",
           "data": {
-            "discovered_device": "Gefundenes Bose-Geraet",
+            "discovered_device": "Gefundenes Bose-Gerät",
             "name": "Name des Lautsprechers (optional)"
           }
         },
         "manual": {
-          "title": "Bose-Geraet manuell hinzufuegen",
-          "description": "Trage zuerst nur die grundlegenden Bose-Geraetedaten ein. Routing und Presets folgen in den naechsten Schritten.",
+          "title": "Bose-Gerät manuell hinzufügen",
+          "description": "Trage zuerst nur die grundlegenden Bose-Gerätedaten ein. Routing und Presets folgen in den nächsten Schritten.",
           "data": {
             "name": "Name des Lautsprechers",
             "bose_ip": "IP-Adresse des Bose-Lautsprechers"
           }
         },
         "routing": {
-          "title": "Routing waehlen",
+          "title": "Routing wählen",
           "description": "Entscheide, ob nur der Bose-Player angelegt werden soll, ob Presets direkt per UPNP auf dem Bose abgespielt werden sollen, oder ob sie an einen anderen Player weitergeleitet werden sollen.",
           "data": {
             "routing_mode": "Was soll eingerichtet werden?"
           }
         },
         "routing_player": {
-          "title": "Zielplayer waehlen",
-          "description": "Waehle den Music-Assistant- oder Home-Assistant-Player, an den Bose-Presets weitergeleitet werden sollen.",
+          "title": "Zielplayer wählen",
+          "description": "Wähle den Music-Assistant- oder Home-Assistant-Player, an den Bose-Presets weitergeleitet werden sollen.",
           "data": {
-            "ma_player": "Zielplayer fuer Preset-Weiterleitung"
+            "ma_player": "Zielplayer für Preset-Weiterleitung"
           }
         },
         "presets": {
           "title": "Stream-Presets",
-          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier geraetespezifische URLs ein.",
+          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier gerätespezifische URLs ein.",
           "data": {
-            "use_preset_defaults": "Globale Standard-URLs verwenden (keine geraetespezifischen Presets)",
-            "preset_1": "Stream-URL fuer Preset 1",
-            "preset_2": "Stream-URL fuer Preset 2",
-            "preset_3": "Stream-URL fuer Preset 3",
-            "preset_4": "Stream-URL fuer Preset 4",
-            "preset_5": "Stream-URL fuer Preset 5",
-            "preset_6": "Stream-URL fuer Preset 6"
+            "use_preset_defaults": "Globale Standard-URLs verwenden (keine gerätespezifischen Presets)",
+            "preset_1": "Stream-URL für Preset 1",
+            "preset_2": "Stream-URL für Preset 2",
+            "preset_3": "Stream-URL für Preset 3",
+            "preset_4": "Stream-URL für Preset 4",
+            "preset_5": "Stream-URL für Preset 5",
+            "preset_6": "Stream-URL für Preset 6"
           }
         },
         "advanced": {
           "title": "Erweiterte Optionen",
-          "description": "Passe optionale Startlautstaerke und weitere erweiterte Werte an, die fuer ein schnelles Setup nicht noetig sind.",
+          "description": "Passe optionale Startlautstärke und weitere erweiterte Werte an, die für ein schnelles Setup nicht nötig sind.",
           "data": {
-            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)",
-            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
-            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
-            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
-            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
-            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
-            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
+            "default_volume": "Bevorzugte Startlautstärke in Prozent (optional)",
+            "preset_1_volume": "Lautstärke für Preset 1 in Prozent (optional)",
+            "preset_2_volume": "Lautstärke für Preset 2 in Prozent (optional)",
+            "preset_3_volume": "Lautstärke für Preset 3 in Prozent (optional)",
+            "preset_4_volume": "Lautstärke für Preset 4 in Prozent (optional)",
+            "preset_5_volume": "Lautstärke für Preset 5 in Prozent (optional)",
+            "preset_6_volume": "Lautstärke für Preset 6 in Prozent (optional)"
           }
         },
         "summary": {
-          "title": "Zusammenfassung pruefen",
-          "description": "Pruefe die Einrichtung vor dem Speichern.\n\nGeraet: {device_name}\nIP-Adresse: {bose_ip}\nModell: {model}\nBose-ID: {device_id}\nRouting: {routing_status}\nZielplayer: {routing_target}\nAktive Presets: {active_presets}\nHinweise: {notes}"
+          "title": "Zusammenfassung prüfen",
+          "description": "Prüfe die Einrichtung vor dem Speichern.\n\nGerät: {device_name}\nIP-Adresse: {bose_ip}\nModell: {model}\nBose-ID: {device_id}\nRouting: {routing_status}\nZielplayer: {routing_target}\nAktive Presets: {active_presets}\nHinweise: {notes}"
         },
         "reconfigure": {
-          "title": "Bose-Geraet bearbeiten",
-          "description": "Waehle, ob du das Geraet im schnellen oder im erweiterten Setup-Modus bearbeiten moechtest.",
+          "title": "Bose-Gerät bearbeiten",
+          "description": "Wähle, ob du das Gerät im schnellen oder im erweiterten Setup-Modus bearbeiten möchtest.",
           "data": {
             "setup_mode": "Setup-Modus"
           }
         },
         "reconfigure_device": {
-          "title": "Bose-Geraetedaten bearbeiten",
-          "description": "Passe Namen und IP-Adresse des Bose-Geraets an.",
+          "title": "Bose-Gerätedaten bearbeiten",
+          "description": "Passe Namen und IP-Adresse des Bose-Geräts an.",
           "data": {
             "name": "Name des Lautsprechers",
             "bose_ip": "IP-Adresse des Bose-Lautsprechers"
@@ -169,61 +169,61 @@
         },
         "reconfigure_routing": {
           "title": "Routing bearbeiten",
-          "description": "Passe an, ob das Bose-Geraet nur als Player angelegt sein soll, ob Presets direkt per UPNP abgespielt werden sollen, oder ob sie an einen anderen Player weitergeleitet werden sollen.",
+          "description": "Passe an, ob das Bose-Gerät nur als Player angelegt sein soll, ob Presets direkt per UPNP abgespielt werden sollen, oder ob sie an einen anderen Player weitergeleitet werden sollen.",
           "data": {
             "routing_mode": "Was soll eingerichtet werden?"
           }
         },
         "reconfigure_routing_player": {
           "title": "Zielplayer bearbeiten",
-          "description": "Waehle den Music-Assistant- oder Home-Assistant-Player, an den Bose-Presets weitergeleitet werden sollen.",
+          "description": "Wähle den Music-Assistant- oder Home-Assistant-Player, an den Bose-Presets weitergeleitet werden sollen.",
           "data": {
-            "ma_player": "Zielplayer fuer Preset-Weiterleitung"
+            "ma_player": "Zielplayer für Preset-Weiterleitung"
           }
         },
         "reconfigure_presets": {
           "title": "Stream-Presets bearbeiten",
-          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier geraetespezifische URLs ein.",
+          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier gerätespezifische URLs ein.",
           "data": {
-            "use_preset_defaults": "Globale Standard-URLs verwenden (keine geraetespezifischen Presets)",
-            "preset_1": "Stream-URL fuer Preset 1",
-            "preset_2": "Stream-URL fuer Preset 2",
-            "preset_3": "Stream-URL fuer Preset 3",
-            "preset_4": "Stream-URL fuer Preset 4",
-            "preset_5": "Stream-URL fuer Preset 5",
-            "preset_6": "Stream-URL fuer Preset 6"
+            "use_preset_defaults": "Globale Standard-URLs verwenden (keine gerätespezifischen Presets)",
+            "preset_1": "Stream-URL für Preset 1",
+            "preset_2": "Stream-URL für Preset 2",
+            "preset_3": "Stream-URL für Preset 3",
+            "preset_4": "Stream-URL für Preset 4",
+            "preset_5": "Stream-URL für Preset 5",
+            "preset_6": "Stream-URL für Preset 6"
           }
         },
         "reconfigure_advanced": {
           "title": "Erweiterte Optionen bearbeiten",
-          "description": "Passe optionale erweiterte Werte fuer dieses Bose-Geraet an.",
+          "description": "Passe optionale erweiterte Werte für dieses Bose-Gerät an.",
           "data": {
-            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)",
-            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
-            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
-            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
-            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
-            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
-            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
+            "default_volume": "Bevorzugte Startlautstärke in Prozent (optional)",
+            "preset_1_volume": "Lautstärke für Preset 1 in Prozent (optional)",
+            "preset_2_volume": "Lautstärke für Preset 2 in Prozent (optional)",
+            "preset_3_volume": "Lautstärke für Preset 3 in Prozent (optional)",
+            "preset_4_volume": "Lautstärke für Preset 4 in Prozent (optional)",
+            "preset_5_volume": "Lautstärke für Preset 5 in Prozent (optional)",
+            "preset_6_volume": "Lautstärke für Preset 6 in Prozent (optional)"
           }
         },
         "reconfigure_summary": {
-          "title": "Zusammenfassung pruefen",
-          "description": "Pruefe die Aenderungen vor dem Speichern.\n\nGeraet: {device_name}\nIP-Adresse: {bose_ip}\nModell: {model}\nBose-ID: {device_id}\nRouting: {routing_status}\nZielplayer: {routing_target}\nAktive Presets: {active_presets}\nHinweise: {notes}"
+          "title": "Zusammenfassung prüfen",
+          "description": "Prüfe die Änderungen vor dem Speichern.\n\nGerät: {device_name}\nIP-Adresse: {bose_ip}\nModell: {model}\nBose-ID: {device_id}\nRouting: {routing_status}\nZielplayer: {routing_target}\nAktive Presets: {active_presets}\nHinweise: {notes}"
         }
       },
       "error": {
-        "cannot_connect": "Keine Verbindung zum Bose-Geraet moeglich. Bitte IP-Adresse und Netzwerk pruefen.",
-        "discovery_failed": "Die Auswahl des gefundenen Geraets ist nicht mehr gueltig. Aktualisiere die Liste und versuche es erneut.",
-        "invalid_volume": "Gib eine Lautstaerke zwischen 0 und 100 Prozent ein.",
-        "ip_exists": "Diese Bose-IP-Adresse ist bereits einem anderen Geraet zugewiesen.",
-        "invalid_ip": "Gib eine gueltige IPv4- oder IPv6-Adresse ein.",
-        "invalid_url": "Gib eine gueltige URL inklusive Protokoll ein, zum Beispiel http://...",
-        "ip_required": "Gib die IP-Adresse des Bose-Geraets ein.",
-        "name_exists": "Ein Geraet mit diesem Namen existiert bereits.",
-        "name_required": "Gib einen Geraetenamen ein.",
-        "no_devices_discovered": "Es wurden keine Bose-Geraete im Netzwerk gefunden.",
-        "target_player_required": "Waehle einen Zielplayer aus, wenn Preset-Weiterleitung aktiviert werden soll."
+        "cannot_connect": "Keine Verbindung zum Bose-Gerät möglich. Bitte IP-Adresse und Netzwerk prüfen.",
+        "discovery_failed": "Die Auswahl des gefundenen Geräts ist nicht mehr gültig. Aktualisiere die Liste und versuche es erneut.",
+        "invalid_volume": "Gib eine Lautstärke zwischen 0 und 100 Prozent ein.",
+        "ip_exists": "Diese Bose-IP-Adresse ist bereits einem anderen Gerät zugewiesen.",
+        "invalid_ip": "Gib eine gültige IPv4- oder IPv6-Adresse ein.",
+        "invalid_url": "Gib eine gültige URL inklusive Protokoll ein, zum Beispiel http://...",
+        "ip_required": "Gib die IP-Adresse des Bose-Geräts ein.",
+        "name_exists": "Ein Gerät mit diesem Namen existiert bereits.",
+        "name_required": "Gib einen Gerätenamen ein.",
+        "no_devices_discovered": "Es wurden keine Bose-Geräte im Netzwerk gefunden.",
+        "target_player_required": "Wähle einen Zielplayer aus, wenn Preset-Weiterleitung aktiviert werden soll."
       },
       "abort": {
         "reconfigure_successful": "Konfiguration aktualisiert"
@@ -232,11 +232,11 @@
   },
   "services": {
     "trigger_preset": {
-      "name": "Preset ausloesen",
+      "name": "Preset auslösen",
       "description": "Leitet ein konfiguriertes Preset manuell zu Testzwecken weiter.",
       "fields": {
         "device": {
-          "name": "Geraetename"
+          "name": "Gerätename"
         },
         "preset": {
           "name": "Preset-Nummer"
@@ -245,10 +245,10 @@
     },
     "play_preset": {
       "name": "Bose-Preset abspielen",
-      "description": "Loest eines der Bose-Presets direkt auf dem Lautsprecher aus.",
+      "description": "Löst eines der Bose-Presets direkt auf dem Lautsprecher aus.",
       "fields": {
         "device": {
-          "name": "Geraetename"
+          "name": "Gerätename"
         },
         "preset": {
           "name": "Preset-Nummer"
@@ -268,8 +268,8 @@
       }
     },
     "add_zone_members": {
-      "name": "Zonenmitglieder hinzufuegen",
-      "description": "Fuegt einer bestehenden Bose-Multiroom-Zone einen oder mehrere Lautsprecher hinzu.",
+      "name": "Zonenmitglieder hinzufügen",
+      "description": "Fügt einer bestehenden Bose-Multiroom-Zone einen oder mehrere Lautsprecher hinzu.",
       "fields": {
         "master": {
           "name": "Master-Lautsprecher"
