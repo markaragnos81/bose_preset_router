@@ -123,7 +123,23 @@ class BoseSoundTouchMediaPlayer(
 
         current_preset = self._current_preset
         if current_preset is not None:
-            return str(current_preset.get("item_name") or "") or self._preset_label(current_preset)
+            item_name = str(current_preset.get("item_name") or "").strip()
+            if item_name and item_name.lower().startswith("preset "):
+                # Bose was provisioned with generic "Preset N" name — try active preset instead
+                active_preset = self._active_bose_preset
+                if active_preset:
+                    better = str(active_preset.get("item_name") or "").strip()
+                    if better and not better.lower().startswith("preset "):
+                        return better
+            return item_name or self._preset_label(current_preset)
+
+        # Fallback for UPNP streams: use the Bose hardware preset name
+        active_preset = self._active_bose_preset
+        if active_preset:
+            name = str(active_preset.get("item_name") or "").strip()
+            if name:
+                return name
+            return self._preset_label(active_preset)
 
         current_source = self._current_source_item
         if current_source is not None:
@@ -132,13 +148,36 @@ class BoseSoundTouchMediaPlayer(
         return None
 
     @property
+    def _active_bose_preset(self) -> dict[str, Any] | None:
+        """Bose hardware preset matching the coordinator's active_preset number."""
+        active = self.coordinator.active_preset
+        if not active:
+            return None
+        for preset in self._presets:
+            if str(preset.get("id")) == str(active):
+                return preset
+        return None
+
+    @property
     def media_artist(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
-        return (
-            str(now_playing.get("artist") or "")
-            or str(now_playing.get("source") or "")
-            or None
-        )
+        artist = str(now_playing.get("artist") or "").strip()
+        if artist:
+            return artist
+
+        source = str(now_playing.get("source") or "").upper()
+        if source == "UPNP":
+            location = str(now_playing.get("location") or "").strip()
+            if location:
+                try:
+                    from urllib.parse import urlsplit
+                    host = urlsplit(location).hostname or ""
+                    if host:
+                        return host
+                except Exception:
+                    pass
+
+        return str(now_playing.get("source") or "").strip() or None
 
     @property
     def media_album_name(self) -> str | None:

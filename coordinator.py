@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 from datetime import timedelta
 from typing import Any
+from urllib.parse import urlsplit
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -90,11 +91,25 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             url = self._resolve_preset_url(preset_id)
             if not url:
                 continue
+            name = self._station_name_from_url(url) or f"Preset {preset_id}"
             try:
-                await self.api.async_store_preset(preset_id, url, f"Preset {preset_id}")
-                _LOGGER.debug("Stored preset %s on %s (%s)", preset_id, self.device_name, self.bose_ip)
+                await self.api.async_store_preset(preset_id, url, name)
+                _LOGGER.debug("Stored preset %s (%s) on %s (%s)", preset_id, name, self.device_name, self.bose_ip)
             except Exception as err:
                 _LOGGER.debug("Could not store preset %s on %s (%s): %s", preset_id, self.device_name, self.bose_ip, err)
+
+    @staticmethod
+    def _station_name_from_url(url: str) -> str:
+        """Derive a readable station name from a stream URL hostname."""
+        try:
+            host = urlsplit(url).hostname or ""
+            skip = {"www", "stream", "streams", "live", "listen", "audio", "icecast", "ice", "cdn", "media"}
+            for part in host.split("."):
+                if part and part not in skip and not part.isdigit():
+                    return part.replace("-", " ").title()
+        except Exception:
+            pass
+        return ""
 
     async def async_stop(self) -> None:
         pass
