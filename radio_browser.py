@@ -110,6 +110,89 @@ def _best_favicon(url: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# radio.net (radio-api.net) high-resolution station logo lookup
+# ---------------------------------------------------------------------------
+
+_RADIO_API_SEARCH = "https://prod.radio-api.net/stations/search"
+_STOPWORDS = {"radio", "fm", "the", "of", "und", "der", "die", "das", "bob", "bobs"}
+
+
+def _stream_key(url: str) -> tuple[str, str]:
+    """Return (host, first-path-segment) — the distinctive identity of a stream URL.
+
+    e.g. http://streams.radiobob.de/bob-rockhits/mp3-192/...  ->  ("streams.radiobob.de", "bob-rockhits")
+    radio.net lists the same host + first segment even when bitrate/suffix differ.
+    """
+    try:
+        p = urlsplit(url)
+        segs = [s for s in p.path.split("/") if s]
+        return (p.hostname or "").lower(), (segs[0].lower() if segs else "")
+    except Exception:
+        return "", ""
+
+
+def _radio_api_queries(name: str) -> list[str]:
+    """Build a small set of search queries from a station name (full + brand)."""
+    tokens = [t for t in re.sub(r"[!\-–—_.,/()']", " ", name).split() if t]
+    cands: list[str] = []
+    if name.strip():
+        cands.append(name.strip())
+    if len(tokens) >= 2:
+        cands.append(" ".join(tokens[:2]))
+    # dedupe, keep order
+    seen: set[str] = set()
+    out: list[str] = []
+    for c in cands:
+        cl = c.lower()
+        if cl not in seen:
+            seen.add(cl)
+            out.append(c)
+    return out
+
+
+async def async_lookup_radio_logo(hass: HomeAssistant, name: str, url: str) -> str:
+    """Return a high-res station logo from radio.net, matched by stream URL. '' if none.
+
+    Matching is done ONLY by stream URL identity (host + first path segment) — name
+    matching is intentionally avoided because radio.net's search ranking produces
+    confident-but-wrong matches for generic names (e.g. "Rock Hits" -> "Yacht Rock").
+    A wrong logo is worse than falling back to a plain favicon.
+    """
+    host, key = _stream_key(url)
+    if not host or not key:
+        return ""
+
+    session = async_get_clientsession(hass)
+    for query in _radio_api_queries(name):
+        try:
+            async with session.get(
+                _RADIO_API_SEARCH,
+                params={"count": "60", "query": query},
+                headers={"User-Agent": "bose_preset_router/homeassistant"},
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as resp:
+                if resp.status != 200:
+                    continue
+                data = await resp.json()
+        except Exception as err:
+            _LOGGER.debug("radio.net search failed for %r: %s", query, err)
+            continue
+
+        for station in data.get("playables", []):
+            logo = str(station.get("logo300x300") or "").strip()
+            if not logo:
+                continue
+            for stream in station.get("streams", []):
+                if _stream_key(str(stream.get("url") or "")) == (host, key):
+                    _LOGGER.debug(
+                        "radio.net logo matched %r via URL key %s/%s -> %s",
+                        station.get("name"), host, key, logo,
+                    )
+                    return logo
+    return ""
+
+
+# ---------------------------------------------------------------------------
 # ICY stream metadata (current track / artist)
 # ---------------------------------------------------------------------------
 

@@ -1,0 +1,14 @@
+﻿2026-05-09T10:01:51.8743072Z ##[group]Run mkdir -p ha_config/custom_components/bose_preset_router
+2026-05-09T10:01:51.8744251Z [36;1mmkdir -p ha_config/custom_components/bose_preset_router[0m
+2026-05-09T10:01:51.8744962Z [36;1mshopt -s dotglob[0m
+2026-05-09T10:01:51.8745454Z [36;1mfor path in *; do[0m
+2026-05-09T10:01:51.8745940Z [36;1m  case "$path" in[0m
+2026-05-09T10:01:51.8746569Z [36;1m    .git|.github|custom_components|docs|ha_config|__pycache__)[0m
+2026-05-09T10:01:51.8747246Z [36;1m      ;;[0m
+2026-05-09T10:01:51.8747854Z [36;1m    *)[0m
+2026-05-09T10:01:51.8748460Z [36;1m      cp -R "$path" ha_config/custom_components/bose_preset_router/[0m
+2026-05-09T10:01:51.8749131Z [36;1m      ;;[0m
+2026-05-09T10:01:51.8749536Z [36;1m  esac[0m
+2026-05-09T10:01:51.8749931Z [36;1mdone[0m
+2026-05-09T10:01:51.8776224Z shell: /usr/bin/bash -e {0}
+2026-05-09T10:01:51.8776759Z ##[endgroup]

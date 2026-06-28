@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
-from .radio_browser import async_fetch_icy_meta, async_lookup_station
+from .radio_browser import async_fetch_icy_meta, async_lookup_radio_logo, async_lookup_station
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -137,8 +137,20 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return self._station_meta[url]
         meta = await async_lookup_station(self.hass, url)
         if not meta:
-            fallback_name = self._station_name_from_url(url)
-            meta = {"name": fallback_name, "favicon": ""}
+            meta = {"name": "", "favicon": ""}
+        if not meta.get("name"):
+            meta["name"] = self._station_name_from_url(url)
+
+        # Prefer a high-res radio.net station logo (matched by stream URL) over the
+        # plain favicon. Only overrides when an exact URL match is found.
+        try:
+            logo = await async_lookup_radio_logo(self.hass, meta.get("name", ""), url)
+        except Exception as err:
+            _LOGGER.debug("radio.net logo lookup failed for %s: %s", url, err)
+            logo = ""
+        if logo:
+            meta["favicon"] = logo
+
         self._station_meta[url] = meta
         return meta
 

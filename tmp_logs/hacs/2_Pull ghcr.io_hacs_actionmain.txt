@@ -1,0 +1,33 @@
+﻿2026-04-10T10:26:44.0418014Z ##[group]Pull down action image 'ghcr.io/hacs/action:main'
+2026-04-10T10:26:44.0462950Z ##[command]/usr/bin/docker pull ghcr.io/hacs/action:main
+2026-04-10T10:26:44.2985932Z main: Pulling from hacs/action
+2026-04-10T10:26:44.2992061Z 589002ba0eae: Already exists
+2026-04-10T10:26:44.3023593Z 98914020a3be: Pulling fs layer
+2026-04-10T10:26:44.3024703Z be2fee0bf4ec: Pulling fs layer
+2026-04-10T10:26:44.3025318Z 79a000d511eb: Pulling fs layer
+2026-04-10T10:26:44.3025998Z 7c77282c9f1e: Pulling fs layer
+2026-04-10T10:26:44.3026484Z 25cebb05c84d: Pulling fs layer
+2026-04-10T10:26:44.3026938Z 41f63ae8a9b6: Pulling fs layer
+2026-04-10T10:26:44.3027390Z 7c77282c9f1e: Waiting
+2026-04-10T10:26:44.3027788Z 25cebb05c84d: Waiting
+2026-04-10T10:26:44.3028167Z 41f63ae8a9b6: Waiting
+2026-04-10T10:26:44.3752222Z 79a000d511eb: Download complete
+2026-04-10T10:26:44.3997973Z 98914020a3be: Verifying Checksum
+2026-04-10T10:26:44.3998929Z 98914020a3be: Download complete
+2026-04-10T10:26:44.4453048Z 7c77282c9f1e: Download complete
+2026-04-10T10:26:44.4690586Z be2fee0bf4ec: Verifying Checksum
+2026-04-10T10:26:44.4691265Z be2fee0bf4ec: Download complete
+2026-04-10T10:26:44.5032536Z 25cebb05c84d: Verifying Checksum
+2026-04-10T10:26:44.5033590Z 25cebb05c84d: Download complete
+2026-04-10T10:26:44.6865030Z 98914020a3be: Pull complete
+2026-04-10T10:26:45.0555012Z 41f63ae8a9b6: Verifying Checksum
+2026-04-10T10:26:45.0556229Z 41f63ae8a9b6: Download complete
+2026-04-10T10:26:45.4369221Z be2fee0bf4ec: Pull complete
+2026-04-10T10:26:45.4495916Z 79a000d511eb: Pull complete
+2026-04-10T10:26:45.4603833Z 7c77282c9f1e: Pull complete
+2026-04-10T10:26:45.4978610Z 25cebb05c84d: Pull complete
+2026-04-10T10:27:10.9377284Z 41f63ae8a9b6: Pull complete
+2026-04-10T10:27:10.9407582Z Digest: sha256:b66c72824f330bb10141a1deaa4e09b097283312cce3f55d097237e73d86c868
+2026-04-10T10:27:10.9424667Z Status: Downloaded newer image for ghcr.io/hacs/action:main
+2026-04-10T10:27:10.9431470Z ghcr.io/hacs/action:main
+2026-04-10T10:27:10.9450859Z ##[endgroup]

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from homeassistant.components.media_player import (
@@ -119,10 +120,15 @@ class BoseSoundTouchMediaPlayer(
     def media_title(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
 
-        # ICY track title (e.g. "Black Dog" from "Led Zeppelin - Black Dog")
-        _, icy_title = self._icy_artist_title
-        if icy_title:
-            return icy_title
+        # Real current song from ICY (e.g. "Black Dog" from "Led Zeppelin - Black Dog")
+        _, song_title = self._real_song
+        if song_title:
+            return song_title
+
+        # No real song playing -> show the clean station name
+        station = self._station_name
+        if station:
+            return station
 
         now_playing_title = self._now_playing_title(now_playing)
         if now_playing_title:
@@ -138,14 +144,50 @@ class BoseSoundTouchMediaPlayer(
 
         return None
 
+    @staticmethod
+    def _normalize_station(value: str) -> str:
+        return re.sub(r"\s+", " ", re.sub(r"[!\-–—_.,/()']", " ", value.lower())).strip()
+
     @property
-    def _icy_artist_title(self) -> tuple[str, str]:
-        """Parse ICY StreamTitle into (artist, title). Returns ('', '') when unavailable."""
+    def _station_name(self) -> str:
+        """Best-known clean station name for the current stream."""
+        now_playing = self._data.get("now_playing", {})
+        name = (
+            str(now_playing.get("station_name") or "").strip()
+            or str(now_playing.get("item_name") or "").strip()
+        )
+        if not name:
+            location = str(now_playing.get("location") or "").strip()
+            if location:
+                name = self.coordinator.get_station_meta(location).get("name", "")
+        if not name:
+            icy = self._data.get("icy_meta", {})
+            name = str(icy.get("icy_name") or "").strip()
+        return name
+
+    @property
+    def _real_song(self) -> tuple[str, str]:
+        """Return (artist, title) ONLY when the ICY StreamTitle is an actual song.
+
+        Many stations broadcast only their own name in StreamTitle (e.g.
+        'RADIO BOB - Rock Hits'). That is branding, not a song, so we must not
+        split it into a fake artist/title. Returns ('', '') in that case.
+        """
         icy = self._data.get("icy_meta", {})
         stream_title = str(icy.get("stream_title") or "").strip()
-        if stream_title:
-            return parse_icy_stream_title(stream_title)
-        return "", ""
+        if not stream_title:
+            return "", ""
+
+        norm_title = self._normalize_station(stream_title)
+        station = self._station_name
+        icy_name = str(icy.get("icy_name") or "").strip()
+        # Treat as branding (not a song) if it matches the station name / icy-name
+        if station and norm_title == self._normalize_station(station):
+            return "", ""
+        if icy_name and norm_title == self._normalize_station(icy_name):
+            return "", ""
+
+        return parse_icy_stream_title(stream_title)
 
     @property
     def media_artist(self) -> str | None:
@@ -154,29 +196,21 @@ class BoseSoundTouchMediaPlayer(
         native_artist = str(now_playing.get("artist") or "").strip()
         if native_artist:
             return native_artist
-        # ICY stream artist (e.g. "Led Zeppelin" from "Led Zeppelin - Black Dog")
-        icy_artist, _ = self._icy_artist_title
-        if icy_artist:
-            return icy_artist
-        # Station name from ICY headers as last resort
-        icy = self._data.get("icy_meta", {})
-        icy_name = str(icy.get("icy_name") or "").strip()
-        if icy_name:
-            return icy_name
-        return str(now_playing.get("source") or "").strip() or None
+        # Real ICY stream artist (e.g. "Led Zeppelin"); empty when only station branding
+        song_artist, _ = self._real_song
+        return song_artist or None
 
     @property
     def media_album_name(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
-        # When showing ICY artist/track, use the station name as "album"
-        icy_artist, _ = self._icy_artist_title
-        if icy_artist:
-            station = str(now_playing.get("item_name") or "").strip()
+        # When a real song is playing, show the station name as the "album"
+        song_artist, _ = self._real_song
+        if song_artist:
+            station = self._station_name
             if station:
                 return station
         return (
             str(now_playing.get("album") or "")
-            or str(now_playing.get("station_name") or "")
             or self._target_player_attr("media_album_name")
             or None
         )
@@ -186,11 +220,17 @@ class BoseSoundTouchMediaPlayer(
         now_playing = self._data.get("now_playing", {})
         current_preset = self._current_preset
 
-        # Favicon from Radio Browser (cached in coordinator by stream URL)
+        # Station logo (radio.net) / favicon, cached in coordinator by stream URL
         location = str(now_playing.get("location") or "").strip()
         cached_favicon = ""
         if location:
             cached_favicon = self.coordinator.get_station_meta(location).get("favicon", "")
+
+        # For UPNP radio, the cached logo is the best source — Bose only echoes back
+        # the (possibly older/plainer) art we sent it via DIDL.
+        source = str(now_playing.get("source") or "").upper()
+        if source == "UPNP" and cached_favicon:
+            return cached_favicon
 
         return (
             str(now_playing.get("image") or "").strip()
@@ -303,12 +343,7 @@ class BoseSoundTouchMediaPlayer(
             "bose_source": now_playing.get("source"),
             "source_account": now_playing.get("source_account"),
             "source_type": now_playing.get("source_type"),
-            "station_name": (
-                str(now_playing.get("station_name") or "").strip()
-                or str(now_playing.get("item_name") or "").strip()
-                or (self.coordinator.get_station_meta(str(now_playing.get("location") or "")).get("name", "") if now_playing.get("location") else "")
-                or None
-            ),
+            "station_name": self._station_name or None,
             "track": now_playing.get("track"),
             "description": now_playing.get("description"),
             "location": now_playing.get("location"),

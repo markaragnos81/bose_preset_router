@@ -1,0 +1,32 @@
+﻿2026-04-10T13:35:13.4999376Z Current runner version: '2.333.1'
+2026-04-10T13:35:13.5026182Z ##[group]Runner Image Provisioner
+2026-04-10T13:35:13.5027289Z Hosted Compute Agent
+2026-04-10T13:35:13.5027895Z Version: 20260213.493
+2026-04-10T13:35:13.5028466Z Commit: 5c115507f6dd24b8de37d8bbe0bb4509d0cc0fa3
+2026-04-10T13:35:13.5029208Z Build Date: 2026-02-13T00:28:41Z
+2026-04-10T13:35:13.5029830Z Worker ID: {40124a3e-5bee-4d3a-a165-76c1bb283ee2}
+2026-04-10T13:35:13.5030516Z Azure Region: eastus2
+2026-04-10T13:35:13.5031041Z ##[endgroup]
+2026-04-10T13:35:13.5032586Z ##[group]Operating System
+2026-04-10T13:35:13.5033438Z Ubuntu
+2026-04-10T13:35:13.5033944Z 24.04.4
+2026-04-10T13:35:13.5034419Z LTS
+2026-04-10T13:35:13.5034843Z ##[endgroup]
+2026-04-10T13:35:13.5035368Z ##[group]Runner Image
+2026-04-10T13:35:13.5035954Z Image: ubuntu-24.04
+2026-04-10T13:35:13.5036474Z Version: 20260406.80.1
+2026-04-10T13:35:13.5037423Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260406.80/images/ubuntu/Ubuntu2404-Readme.md
+2026-04-10T13:35:13.5039598Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260406.80
+2026-04-10T13:35:13.5040533Z ##[endgroup]
+2026-04-10T13:35:13.5041678Z ##[group]GITHUB_TOKEN Permissions
+2026-04-10T13:35:13.5043929Z Contents: read
+2026-04-10T13:35:13.5044596Z Metadata: read
+2026-04-10T13:35:13.5045074Z Packages: read
+2026-04-10T13:35:13.5045556Z ##[endgroup]
+2026-04-10T13:35:13.5047623Z Secret source: Actions
+2026-04-10T13:35:13.5048337Z Prepare workflow directory
+2026-04-10T13:35:13.5373745Z Prepare all required actions
+2026-04-10T13:35:13.5411084Z Getting action download info
+2026-04-10T13:35:13.8770616Z Download action repository 'actions/checkout@v5' (SHA:93cb6efe18208431cddfb8368fd83d5badbf9bfd)
+2026-04-10T13:35:14.0427848Z Download action repository 'home-assistant/actions@master' (SHA:f6f29a7ee3fa0eccadf3620a7b9ee00ab54ec03b)
+2026-04-10T13:35:14.3324355Z Complete job name: hassfest
