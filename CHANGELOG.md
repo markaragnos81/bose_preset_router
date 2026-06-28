@@ -8,6 +8,33 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.1] - 2026-06-28
+
+### Changed
+
+- Button-Platform entfernt — die sechs Preset-Button-Entities waren redundant mit dem `play_preset`-Service und koennen daher entfallen
+- Media-Player-Entity um vollstaendige Metadaten erweitert: `media_track`-Property sowie zusaetzliche Attribute `track`, `description`, `location`, `play_status`, `model`, `network_type` und `account`
+
+## [0.6.0] - 2026-06-28
+
+### Added
+
+- Neue Methode `async_store_preset()` in der Bose-API: schreibt Presets per `/storePreset` mit `source="UPNP"` direkt auf das Geraet, funktioniert ohne Bose-Account und nach dem Cloud-Shutdown
+- Auto-Provisioning beim Start: der Coordinator schreibt beim HA-Start alle konfigurierten Preset-URLs automatisch auf das Bose-Geraet, damit physische Tasten zuverlaessig erkannt werden
+- Auto-Provisioning beim Setup/Reconfigure: Presets werden nach der Bestaetigungsseite sofort auf das Geraet geschrieben
+
+### Changed
+
+- Setup-Dialog: `preset_N_enabled`-Checkbox entfernt — eine eingetragene URL genuegt, um ein Preset zu aktivieren
+- Router: leitet `enabled` jetzt aus der URL-Praesenz ab; ein explizit gesetztes `preset_N_enabled: false` wirkt weiterhin als Override (Backward Compatibility)
+- Beschreibungstexte im Setup-Dialog erklaeren jetzt das Auto-Provisioning
+
+## [0.5.2] - 2026-06-14
+
+### Fixed
+
+- HA-Deprecation-Warnung behoben: `add_update_listener`-Muster entfernt, das ab HA 2026.12 nicht mehr unterstuetzt wird
+
 ## [0.5.1] - 2026-05-10
 
 ### Changed

@@ -4,97 +4,13 @@ Benutzerdefinierte Home-Assistant-Integration fuer Bose-SoundTouch-Geraete mit l
 
 Die Integration ist fuer Setups gedacht, in denen Bose-SoundTouch-Geraete nach dem Wegfall der Bose-Cloud-Dienste weiterhin lokal in Home Assistant nutzbar bleiben sollen. Neben der direkten Geraetesteuerung bleibt auch die urspruengliche Router-Idee erhalten: Bose-Presets koennen weiterhin als physische Preset-Fernbedienung fuer Music Assistant oder andere Home-Assistant-`media_player` dienen.
 
-## Wichtig Fuer Nutzer Von `0.4.3`
+## Entities Pro Bose-Geraet
 
-Wenn du per HACS direkt von `0.4.3` auf `0.4.13` springst, aendert sich nicht nur das Branding, sondern auch der fachliche Umfang der Integration deutlich.
+Pro konfiguriertem Bose-Geraet legt die Integration folgende Home-Assistant-Entities an:
 
-Seit `0.4.4+` ist aus dem frueheren Preset-Router eine deutlich umfassendere lokale Bose-SoundTouch-Integration geworden:
-
-- Bose-Geraete werden als eigene `media_player`-Entities in Home Assistant angelegt
-- Presets koennen direkt in Home Assistant gesteuert werden
-- Bose-Quellen, Presets und Status werden lokal aus der SoundTouch-API gelesen
-- Multiroom-/Zonenfunktionen sind vorbereitet
-- Discovery und Geraete-Setup wurden erweitert
-- Die urspruengliche Router-Funktion fuer Music Assistant bleibt erhalten
-
-Kurz gesagt:
-
-- `0.4.3` war noch stark auf Routing fokussiert
-- `0.4.13` ist eine lokale Bose-SoundTouch-Integration mit integriertem Preset-Routing
-
-## Was Sich Seit `0.4.3` Geaendert Hat
-
-### Neue Bose-Entities
-
-Pro Bose-Geraet werden jetzt mehrere Home-Assistant-Entities angelegt:
-
-- ein eigener Bose-`media_player`
+- einen eigenen Bose-`media_player`
 - ein Preset-`select`
-- sechs Preset-`button`-Entities
 - sechs Preset-`binary_sensor`-Entities fuer den aktiven Preset-Status
-
-### Direkte Bose-Steuerung
-
-Der Bose-`media_player` unterstuetzt jetzt unter anderem:
-
-- Ein- und Ausschalten
-- Play, Pause und Stop
-- Vor und Zurueck
-- Lautstaerke und Mute
-- Quellen-Auswahl
-- Preset-Auswahl
-- `browse_media` fuer Presets, Quellen und Zonen
-
-### Verbesserte Router-Architektur
-
-Die Router-Funktion ist weiterhin da, arbeitet jetzt aber auf derselben SoundTouch-Basis wie der Bose-`media_player`. Das bedeutet:
-
-- Bose-Preset-Tastendruecke werden lokal erkannt
-- die Weitergabe an Music Assistant oder andere `media_player` bleibt moeglich
-- Bose-Status und Routing greifen auf dieselbe lokale Geraeteschicht zu
-
-### Setup Und Discovery
-
-Das Setup ist nicht mehr nur eine reine Preset-Konfiguration. Die Integration fuehrt dich jetzt durch:
-
-- Geraeteerkennung per SSDP
-- manuelles Hinzufuegen per Bose-IP
-- Anlegen eines echten Bose-Geraets in Home Assistant
-- Preset-Zuordnung und Zielplayer-Konfiguration
-
-## Update-Hinweise Fuer Bestehende Installationen
-
-Wenn du von `0.4.3` kommst, sind diese Punkte wichtig:
-
-1. Nach dem Update Home Assistant einmal komplett neu starten.
-2. Die Integration danach einmal oeffnen und pruefen, ob Bose-Geraete und Entities sauber angelegt wurden.
-3. Falls alte doppelte Bose-Geraete sichtbar sind, die Integration einmal neu laden und veraltete Altgeraete im Zweifel manuell entfernen.
-4. Falls dein Routing bisher ueber Music Assistant lief, pruefe den hinterlegten Zielplayer pro Bose-Geraet.
-5. Wenn Bose-Preset-Bestaetigungen zu streng sind, pruefe die Optionen fuer strenge oder tolerante Bose-Bestaetigung.
-
-## Empfohlener Erster Check Nach Dem Update
-
-Nach dem Update auf `0.4.13` solltest du kurz diese Punkte pruefen:
-
-- Der Bose-`media_player` ist vorhanden und verfuegbar
-- Preset-`select` und Preset-Buttons sind vorhanden
-- Die neuen Preset-Statussensoren wechseln beim Umschalten korrekt
-- `media_title`, `media_artist`, Cover und Quelle werden sinnvoll angezeigt
-- `turn_off` funktioniert auf deinem Bose ueber `standby`
-- Das Routing an Music Assistant funktioniert weiterhin wie erwartet
-
-## Welche Version Ist Fuer Was Relevant
-
-- `0.4.4`:
-  erster groesserer Umbau Richtung echte Bose-Integration
-- `0.4.5` bis `0.4.9`:
-  Stabilisierung von Reload, Device-Registry, Config-Flow und Bose-spezifischen Eigenheiten
-- `0.4.10` und `0.4.11`:
-  bessere Darstellung von Titeln, Radiometadaten und Cover
-- `0.4.12`:
-  neue offizielle Brand-Assets fuer HA/HACS
-- `0.4.13`:
-  sichtbarer aktiver Preset-Status ueber `binary_sensor`
 
 ## Funktionen
 
@@ -103,8 +19,8 @@ Nach dem Update auf `0.4.13` solltest du kurz diese Punkte pruefen:
 - Direkte Preset-Steuerung in Home Assistant
   - per `play_preset`-Service
   - per Preset-`select`
-  - per sechs Preset-Buttons pro Geraet
   - per sechs Preset-Statussensoren zur Anzeige des aktuell aktiven Presets
+- Auto-Provisioning: konfigurierte Presets werden beim Setup und bei jedem HA-Start automatisch per `/storePreset` auf das Geraet geschrieben, damit physische Tasten zuverlaessig erkannt werden (kein Bose-Account erforderlich)
 - Quellen-Browsing und Quellen-Auswahl im `media_player`
 - Multiroom-/Zonen-Services fuer Bose-SoundTouch-Geraete
 - Discovery-unterstuetztes Setup ueber SSDP und lokale Bose-API-Pruefung
@@ -182,19 +98,21 @@ Die Geraetekonfiguration ist in mehrere Schritte aufgeteilt:
 
 - Geraet automatisch im Netzwerk finden oder manuell anlegen
 - Basisdaten des Lautsprechers
-- Presets `1` bis `3`
-- Presets `4` bis `6`
+- Routing-Ziel (optional)
+- Presets `1` bis `6` in einer Uebersicht
+- Erweiterte Optionen (Expertenmodus)
 
 Pro Bose-Geraet koennen folgende Werte konfiguriert werden:
 
 - Name des Lautsprechers
 - Bose-IP-Adresse
-- Zielplayer fuer Music Assistant
+- Zielplayer fuer Music Assistant (optional)
 - Optionale Standardlautstaerke
 - Pro Preset:
-  - Aktiviert oder deaktiviert
-  - Stream-URL
+  - Stream-URL (Preset ist aktiv, sobald eine URL eingetragen ist)
   - Optionale Preset-Lautstaerke
+
+Nach der Bestaetigung werden alle konfigurierten Presets automatisch auf dem Bose-Geraet gespeichert.
 
 ## Home-Assistant-Funktionen
 
@@ -214,9 +132,8 @@ Die Bose-Presets koennen in Home Assistant direkt ausgeloest werden:
 
 - ueber den Service `bose_preset_router.play_preset`
 - ueber ein Preset-`select` pro Geraet
-- ueber sechs Preset-Buttons pro Geraet
 
-Zusaetzlich stellt die Integration sechs `binary_sensor`-Entities pro Geraet bereit, damit in Dashboards sichtbar ist, welches Preset aktuell aktiv ist:
+Die Integration stellt ausserdem sechs `binary_sensor`-Entities pro Geraet bereit, damit in Dashboards sichtbar ist, welches Preset aktuell aktiv ist:
 
 - `binary_sensor.<geraet>_preset_1_aktiv`
 - `binary_sensor.<geraet>_preset_2_aktiv`
