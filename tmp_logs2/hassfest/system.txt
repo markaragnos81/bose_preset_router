@@ -1,8 +1,0 @@
-2026-04-10T13:35:09.8250000Z Evaluating hassfest.if
-2026-04-10T13:35:09.8250000Z Evaluating: success()
-2026-04-10T13:35:09.8250000Z Result: true
-2026-04-10T13:35:09.8310000Z Requested labels: ubuntu-latest
-2026-04-10T13:35:09.8310000Z Job defined at: markaragnos81/bose_preset_router/.github/workflows/hassfest.yaml@refs/tags/v0.3.3
-2026-04-10T13:35:09.8310000Z Waiting for a runner to pick up this job...
-2026-04-10T13:35:10.4890000Z Job is waiting for a hosted runner to come online.
-2026-04-10T13:35:10.4890000Z Job is about to start running on the hosted runner: GitHub Actions 1000000016

@@ -3,3 +3,8 @@ __pycache__/
 *.pyo
 *.tmp.png
 .DS_Store
+
+# Local CI/HA log dumps (not part of the integration)
+.codex_tmp/
+tmp_logs/
+tmp_logs2/
