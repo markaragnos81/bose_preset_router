@@ -10,7 +10,6 @@ Pro konfiguriertem Bose-Geraet legt die Integration folgende Home-Assistant-Enti
 
 - einen eigenen Bose-`media_player`
 - ein Preset-`select`
-- sechs Preset-`binary_sensor`-Entities fuer den aktiven Preset-Status
 
 ## Funktionen
 
@@ -134,14 +133,7 @@ Die Bose-Presets koennen in Home Assistant direkt ausgeloest werden:
 - ueber den Service `bose_preset_router.play_preset`
 - ueber ein Preset-`select` pro Geraet
 
-Die Integration stellt ausserdem sechs `binary_sensor`-Entities pro Geraet bereit, damit in Dashboards sichtbar ist, welches Preset aktuell aktiv ist:
-
-- `binary_sensor.<geraet>_preset_1_aktiv`
-- `binary_sensor.<geraet>_preset_2_aktiv`
-- `binary_sensor.<geraet>_preset_3_aktiv`
-- `binary_sensor.<geraet>_preset_4_aktiv`
-- `binary_sensor.<geraet>_preset_5_aktiv`
-- `binary_sensor.<geraet>_preset_6_aktiv`
+Das aktuell aktive Preset ist ueber das Attribut `active_preset` am `media_player` abrufbar (Integer, z.B. `5`, oder `null` wenn kein Preset aktiv ist).
 
 ### Multiroom / Zonen
 

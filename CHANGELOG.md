@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.4] - 2026-06-28
+
+### Changed
+
+- Binary-Sensor-Platform entfernt — redundant, da der aktive Preset jetzt ueber das Attribut \`active_preset\` am \`media_player\` abgerufen werden kann
+
 ## [0.6.3] - 2026-06-28
 
 ### Fixed
