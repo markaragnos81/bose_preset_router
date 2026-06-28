@@ -569,6 +569,10 @@ class BosePresetRouterManager:
 
         routing_mode = str(device.get(CONF_ROUTING_MODE) or ROUTING_MODE_NONE)
         if routing_mode == ROUTING_MODE_DIRECT:
+            if reason == "websocket":
+                # Physical button already selected the preset — nothing to do
+                _LOGGER.debug("Direct routing: physical press on %s preset=%s, no action needed", device_name, preset)
+                return
             coordinator = self._get_coordinator(device[CONF_BOSE_IP])
             if coordinator is None:
                 _LOGGER.warning("No coordinator for direct routing: device=%s", device_name)
