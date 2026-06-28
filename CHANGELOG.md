@@ -8,6 +8,14 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.9] - 2026-06-28
+
+### Changed
+
+- Alle Setup-Seiten auf kompakte Einzelseiten ohne Scrollen umgestellt:
+  - Globale Einstellungen: "Allgemein" (7 Felder) + "Standard-Presets" (6 URL-Felder) als separate Schritte
+  - Geraete-Presets: aufgeteilt in "Presets 1–3" und "Presets 4–6"
+
 ## [0.6.8] - 2026-06-28
 
 ### Added

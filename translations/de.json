@@ -7,7 +7,7 @@
     "step": {
       "user": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Lege fest, wie sich die Integration insgesamt verhalten soll, inklusive Benachrichtigungen, Logging und der Pruefung der Stream-Uebergabe. Du kannst auch Standard-Stream-URLs fuer Presets 1–6 hinterlegen, die fuer alle Bose-Geraete gelten — sofern sie nicht pro Geraet ueberschrieben werden.",
+        "description": "Lege fest, wie sich die Integration insgesamt verhalten soll.",
         "data": {
           "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
           "debug_logging": "Ausfuehrliches Logging aktivieren",
@@ -15,18 +15,24 @@
           "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
           "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
           "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
-          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten",
-          "default_preset_1": "Standard-Stream-URL fuer Preset 1 (optional)",
-          "default_preset_2": "Standard-Stream-URL fuer Preset 2 (optional)",
-          "default_preset_3": "Standard-Stream-URL fuer Preset 3 (optional)",
-          "default_preset_4": "Standard-Stream-URL fuer Preset 4 (optional)",
-          "default_preset_5": "Standard-Stream-URL fuer Preset 5 (optional)",
-          "default_preset_6": "Standard-Stream-URL fuer Preset 6 (optional)"
+          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
+        }
+      },
+      "global_presets": {
+        "title": "Standard-Stream-URLs",
+        "description": "Hinterlege Standard-URLs fuer Presets 1–6. Diese gelten fuer alle Bose-Geraete und koennen pro Geraet ueberschrieben werden.",
+        "data": {
+          "default_preset_1": "Standard-URL Preset 1",
+          "default_preset_2": "Standard-URL Preset 2",
+          "default_preset_3": "Standard-URL Preset 3",
+          "default_preset_4": "Standard-URL Preset 4",
+          "default_preset_5": "Standard-URL Preset 5",
+          "default_preset_6": "Standard-URL Preset 6"
         }
       },
       "reconfigure": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Passe Benachrichtigungen, Logging und die Wiederholungspruefung fuer eine zuverlaessige Stream-Uebergabe an. Standard-Stream-URLs gelten fuer alle Geraete, sofern sie nicht pro Geraet ueberschrieben werden.",
+        "description": "Passe Benachrichtigungen, Logging und die Wiederholungspruefung fuer eine zuverlaessige Stream-Uebergabe an.",
         "data": {
           "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
           "debug_logging": "Ausfuehrliches Logging aktivieren",
@@ -34,13 +40,19 @@
           "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
           "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
           "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
-          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten",
-          "default_preset_1": "Standard-Stream-URL fuer Preset 1 (optional)",
-          "default_preset_2": "Standard-Stream-URL fuer Preset 2 (optional)",
-          "default_preset_3": "Standard-Stream-URL fuer Preset 3 (optional)",
-          "default_preset_4": "Standard-Stream-URL fuer Preset 4 (optional)",
-          "default_preset_5": "Standard-Stream-URL fuer Preset 5 (optional)",
-          "default_preset_6": "Standard-Stream-URL fuer Preset 6 (optional)"
+          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
+        }
+      },
+      "reconfigure_global_presets": {
+        "title": "Standard-Stream-URLs",
+        "description": "Hinterlege Standard-URLs fuer Presets 1–6. Diese gelten fuer alle Bose-Geraete und koennen pro Geraet ueberschrieben werden.",
+        "data": {
+          "default_preset_1": "Standard-URL Preset 1",
+          "default_preset_2": "Standard-URL Preset 2",
+          "default_preset_3": "Standard-URL Preset 3",
+          "default_preset_4": "Standard-URL Preset 4",
+          "default_preset_5": "Standard-URL Preset 5",
+          "default_preset_6": "Standard-URL Preset 6"
         }
       }
     },
@@ -111,21 +123,27 @@
           }
         },
         "presets": {
-          "title": "Presets konfigurieren",
-          "description": "Trage fuer jeden Preset-Knopf, den du nutzen moechtest, eine Stream-URL ein. Presets mit einer URL werden automatisch auf dem Bose-Geraet gespeichert, damit Tastendruecke am Geraet erkannt werden.",
+          "title": "Presets 1–3",
+          "description": "Trage Stream-URLs fuer Preset-Knoepfe 1–3 ein. Leer lassen, um die globale Standard-URL zu verwenden.",
           "data": {
-            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_1": "Stream-URL fuer Preset 1",
-            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
+            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_2": "Stream-URL fuer Preset 2",
-            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
+            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
             "preset_3": "Stream-URL fuer Preset 3",
-            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
+            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)"
+          }
+        },
+        "presets_b": {
+          "title": "Presets 4–6",
+          "description": "Trage Stream-URLs fuer Preset-Knoepfe 4–6 ein. Leer lassen, um die globale Standard-URL zu verwenden.",
+          "data": {
             "preset_4": "Stream-URL fuer Preset 4",
-            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
+            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
             "preset_5": "Stream-URL fuer Preset 5",
-            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)",
-            "preset_6": "Stream-URL fuer Preset 6"
+            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
+            "preset_6": "Stream-URL fuer Preset 6",
+            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
           }
         },
         "advanced": {
@@ -169,21 +187,27 @@
           }
         },
         "reconfigure_presets": {
-          "title": "Presets bearbeiten",
-          "description": "Aktualisiere die Stream-URLs fuer die Preset-Knoepfe. Presets mit einer URL werden automatisch auf dem Bose-Geraet gespeichert, damit Tastendruecke am Geraet erkannt werden.",
+          "title": "Presets 1–3 bearbeiten",
+          "description": "Aktualisiere Stream-URLs fuer Preset-Knoepfe 1–3. Leer lassen, um die globale Standard-URL zu verwenden.",
           "data": {
-            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_1": "Stream-URL fuer Preset 1",
-            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
+            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_2": "Stream-URL fuer Preset 2",
-            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
+            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
             "preset_3": "Stream-URL fuer Preset 3",
-            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
+            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)"
+          }
+        },
+        "reconfigure_presets_b": {
+          "title": "Presets 4–6 bearbeiten",
+          "description": "Aktualisiere Stream-URLs fuer Preset-Knoepfe 4–6. Leer lassen, um die globale Standard-URL zu verwenden.",
+          "data": {
             "preset_4": "Stream-URL fuer Preset 4",
-            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
+            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
             "preset_5": "Stream-URL fuer Preset 5",
-            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)",
-            "preset_6": "Stream-URL fuer Preset 6"
+            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
+            "preset_6": "Stream-URL fuer Preset 6",
+            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
           }
         },
         "reconfigure_advanced": {

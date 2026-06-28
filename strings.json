@@ -4,7 +4,7 @@
     "step": {
       "user": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Choose how the integration should behave overall. You can also set default stream URLs for presets 1–6 that apply to all Bose devices unless overridden per device.",
+        "description": "Choose how the integration should behave overall.",
         "data": {
           "notify_on_press": "Show a notification when a preset is pressed",
           "debug_logging": "Enable detailed log output",
@@ -12,18 +12,24 @@
           "playback_verify_attempts": "Retry stream handoff this many times",
           "playback_verify_delay_seconds": "Wait this many seconds between checks",
           "strict_bose_confirmation": "Stop routing when Bose preset confirmation fails",
-          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation",
-          "default_preset_1": "Default stream URL for preset 1 (optional)",
-          "default_preset_2": "Default stream URL for preset 2 (optional)",
-          "default_preset_3": "Default stream URL for preset 3 (optional)",
-          "default_preset_4": "Default stream URL for preset 4 (optional)",
-          "default_preset_5": "Default stream URL for preset 5 (optional)",
-          "default_preset_6": "Default stream URL for preset 6 (optional)"
+          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation"
+        }
+      },
+      "global_presets": {
+        "title": "Default stream URLs",
+        "description": "Set default stream URLs for presets 1–6. These apply to all Bose devices. Leave empty to configure per device.",
+        "data": {
+          "default_preset_1": "Default URL preset 1",
+          "default_preset_2": "Default URL preset 2",
+          "default_preset_3": "Default URL preset 3",
+          "default_preset_4": "Default URL preset 4",
+          "default_preset_5": "Default URL preset 5",
+          "default_preset_6": "Default URL preset 6"
         }
       },
       "reconfigure": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs. Default stream URLs apply to all devices unless overridden per device.",
+        "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs.",
         "data": {
           "notify_on_press": "Show a notification when a preset is pressed",
           "debug_logging": "Enable detailed log output",
@@ -31,13 +37,19 @@
           "playback_verify_attempts": "Retry stream handoff this many times",
           "playback_verify_delay_seconds": "Wait this many seconds between checks",
           "strict_bose_confirmation": "Stop routing when Bose preset confirmation fails",
-          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation",
-          "default_preset_1": "Default stream URL for preset 1 (optional)",
-          "default_preset_2": "Default stream URL for preset 2 (optional)",
-          "default_preset_3": "Default stream URL for preset 3 (optional)",
-          "default_preset_4": "Default stream URL for preset 4 (optional)",
-          "default_preset_5": "Default stream URL for preset 5 (optional)",
-          "default_preset_6": "Default stream URL for preset 6 (optional)"
+          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation"
+        }
+      },
+      "reconfigure_global_presets": {
+        "title": "Default stream URLs",
+        "description": "Set default stream URLs for presets 1–6. These apply to all Bose devices. Leave empty to configure per device.",
+        "data": {
+          "default_preset_1": "Default URL preset 1",
+          "default_preset_2": "Default URL preset 2",
+          "default_preset_3": "Default URL preset 3",
+          "default_preset_4": "Default URL preset 4",
+          "default_preset_5": "Default URL preset 5",
+          "default_preset_6": "Default URL preset 6"
         }
       }
     },
@@ -109,21 +121,27 @@
           }
         },
         "presets": {
-          "title": "Configure presets",
-          "description": "Enter a stream URL for each preset button you want to use. Presets with a URL are automatically stored on the Bose device so physical button presses are detected.",
+          "title": "Presets 1–3",
+          "description": "Enter stream URLs for preset buttons 1–3. Leave empty to use the global default URL.",
           "data": {
-            "preset_1_volume": "Volume for preset 1 in percent (optional)",
             "preset_1": "Stream URL for preset 1",
-            "preset_2_volume": "Volume for preset 2 in percent (optional)",
+            "preset_1_volume": "Volume for preset 1 in percent (optional)",
             "preset_2": "Stream URL for preset 2",
-            "preset_3_volume": "Volume for preset 3 in percent (optional)",
+            "preset_2_volume": "Volume for preset 2 in percent (optional)",
             "preset_3": "Stream URL for preset 3",
-            "preset_4_volume": "Volume for preset 4 in percent (optional)",
+            "preset_3_volume": "Volume for preset 3 in percent (optional)"
+          }
+        },
+        "presets_b": {
+          "title": "Presets 4–6",
+          "description": "Enter stream URLs for preset buttons 4–6. Leave empty to use the global default URL.",
+          "data": {
             "preset_4": "Stream URL for preset 4",
-            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_4_volume": "Volume for preset 4 in percent (optional)",
             "preset_5": "Stream URL for preset 5",
-            "preset_6_volume": "Volume for preset 6 in percent (optional)",
-            "preset_6": "Stream URL for preset 6"
+            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_6": "Stream URL for preset 6",
+            "preset_6_volume": "Volume for preset 6 in percent (optional)"
           }
         },
         "advanced": {
@@ -167,21 +185,27 @@
           }
         },
         "reconfigure_presets": {
-          "title": "Edit presets",
-          "description": "Update stream URLs for preset buttons. Presets with a URL are automatically stored on the Bose device so physical button presses are detected.",
+          "title": "Edit presets 1–3",
+          "description": "Update stream URLs for preset buttons 1–3. Leave empty to use the global default URL.",
           "data": {
-            "preset_1_volume": "Volume for preset 1 in percent (optional)",
             "preset_1": "Stream URL for preset 1",
-            "preset_2_volume": "Volume for preset 2 in percent (optional)",
+            "preset_1_volume": "Volume for preset 1 in percent (optional)",
             "preset_2": "Stream URL for preset 2",
-            "preset_3_volume": "Volume for preset 3 in percent (optional)",
+            "preset_2_volume": "Volume for preset 2 in percent (optional)",
             "preset_3": "Stream URL for preset 3",
-            "preset_4_volume": "Volume for preset 4 in percent (optional)",
+            "preset_3_volume": "Volume for preset 3 in percent (optional)"
+          }
+        },
+        "reconfigure_presets_b": {
+          "title": "Edit presets 4–6",
+          "description": "Update stream URLs for preset buttons 4–6. Leave empty to use the global default URL.",
+          "data": {
             "preset_4": "Stream URL for preset 4",
-            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_4_volume": "Volume for preset 4 in percent (optional)",
             "preset_5": "Stream URL for preset 5",
-            "preset_6_volume": "Volume for preset 6 in percent (optional)",
-            "preset_6": "Stream URL for preset 6"
+            "preset_5_volume": "Volume for preset 5 in percent (optional)",
+            "preset_6": "Stream URL for preset 6",
+            "preset_6_volume": "Volume for preset 6 in percent (optional)"
           }
         },
         "reconfigure_advanced": {

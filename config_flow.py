@@ -66,7 +66,7 @@ ADVANCED_KEYS = {CONF_DEFAULT_VOLUME}
 _LOGGER = logging.getLogger(__name__)
 
 
-def global_schema() -> vol.Schema:
+def global_behavior_schema() -> vol.Schema:
     return vol.Schema(
         {
             vol.Required(CONF_NOTIFY_ON_PRESS, default=DEFAULT_NOTIFY_ON_PRESS): selector.BooleanSelector(),
@@ -94,12 +94,17 @@ def global_schema() -> vol.Schema:
                 CONF_TOLERANT_BOSE_CONFIRMATION,
                 default=DEFAULT_TOLERANT_BOSE_CONFIRMATION,
             ): selector.BooleanSelector(),
-            **{
-                vol.Optional(default_preset_url_key(p)): selector.TextSelector(
-                    selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
-                )
-                for p in PRESET_IDS
-            },
+        }
+    )
+
+
+def global_presets_schema() -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Optional(default_preset_url_key(p)): selector.TextSelector(
+                selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
+            )
+            for p in PRESET_IDS
         }
     )
 
@@ -232,15 +237,23 @@ def advanced_schema() -> vol.Schema:
     )
 
 
-def preset_schema(*, expert: bool) -> vol.Schema:
+def _preset_schema_for(presets: tuple, *, expert: bool) -> vol.Schema:
     schema: dict = {}
-    for preset in PRESET_IDS:
+    for preset in presets:
         schema[vol.Optional(preset_url_key(preset))] = selector.TextSelector(
             selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
         )
         if expert:
             schema[vol.Optional(preset_volume_key(preset))] = _volume_selector()
     return vol.Schema(schema)
+
+
+def preset_schema_a(*, expert: bool) -> vol.Schema:
+    return _preset_schema_for((1, 2, 3), expert=expert)
+
+
+def preset_schema_b(*, expert: bool) -> vol.Schema:
+    return _preset_schema_for((4, 5, 6), expert=expert)
 
 
 def _is_valid_url(value: str) -> bool:
@@ -538,11 +551,24 @@ class BosePresetRouterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason="single_instance_allowed")
 
         if user_input is not None:
-            return self.async_create_entry(title="Bose SoundTouch LocalControl", data=user_input)
+            self._global_behavior: dict = dict(user_input)
+            return await self.async_step_global_presets()
 
         return self.async_show_form(
             step_id="user",
-            data_schema=self.add_suggested_values_to_schema(global_schema(), {}),
+            data_schema=self.add_suggested_values_to_schema(global_behavior_schema(), {}),
+            errors={},
+        )
+
+    async def async_step_global_presets(self, user_input=None) -> FlowResult:
+        if user_input is not None:
+            data = {**self._global_behavior, **{k: v for k, v in user_input.items() if str(v or "").strip()}}
+            return self.async_create_entry(title="Bose SoundTouch LocalControl", data=data)
+
+        existing = getattr(self, "_global_behavior", {})
+        return self.async_show_form(
+            step_id="global_presets",
+            data_schema=self.add_suggested_values_to_schema(global_presets_schema(), existing),
             errors={},
         )
 
@@ -550,16 +576,31 @@ class BosePresetRouterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         entry = self._get_reconfigure_entry()
 
         if user_input is not None:
+            self._global_behavior = {**entry.data, **dict(user_input)}
+            return await self.async_step_reconfigure_global_presets()
+
+        defaults = {**entry.data, **entry.options}
+        return self.async_show_form(
+            step_id="reconfigure",
+            data_schema=self.add_suggested_values_to_schema(global_behavior_schema(), defaults),
+            errors={},
+        )
+
+    async def async_step_reconfigure_global_presets(self, user_input=None) -> FlowResult:
+        entry = self._get_reconfigure_entry()
+
+        if user_input is not None:
+            updates = {**self._global_behavior, **{k: v for k, v in user_input.items() if str(v or "").strip()}}
             return self.async_update_reload_and_abort(
                 entry,
-                data_updates=user_input,
+                data_updates=updates,
                 reason="reconfigure_successful",
             )
 
         defaults = {**entry.data, **entry.options}
         return self.async_show_form(
-            step_id="reconfigure",
-            data_schema=self.add_suggested_values_to_schema(global_schema(), defaults),
+            step_id="reconfigure_global_presets",
+            data_schema=self.add_suggested_values_to_schema(global_presets_schema(), defaults),
             errors={},
         )
 
@@ -742,11 +783,21 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
             errors=errors or {},
         )
 
-    def _show_presets(self, *, step_id: str = "presets", errors: dict[str, str] | None = None) -> FlowResult:
+    def _show_presets_a(self, *, step_id: str = "presets", errors: dict[str, str] | None = None) -> FlowResult:
         return self.async_show_form(
             step_id=step_id,
             data_schema=self.add_suggested_values_to_schema(
-                preset_schema(expert=self._is_expert_mode),
+                preset_schema_a(expert=self._is_expert_mode),
+                _preset_fields(self._pending_user_input, expert=self._is_expert_mode),
+            ),
+            errors=errors or {},
+        )
+
+    def _show_presets_b(self, *, step_id: str = "presets_b", errors: dict[str, str] | None = None) -> FlowResult:
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=self.add_suggested_values_to_schema(
+                preset_schema_b(expert=self._is_expert_mode),
                 _preset_fields(self._pending_user_input, expert=self._is_expert_mode),
             ),
             errors=errors or {},
@@ -811,7 +862,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         if routing_errors:
             return self._show_routing(step_id=routing_step_id, errors=routing_errors)
         if preset_errors:
-            return self._show_presets(step_id=presets_step_id, errors=preset_errors)
+            return self._show_presets_a(step_id=presets_step_id, errors=preset_errors)
         if advanced_errors and self._is_expert_mode:
             return self._show_advanced(step_id=advanced_step_id, errors=advanced_errors)
 
@@ -921,11 +972,18 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     async def async_step_presets(self, user_input=None) -> FlowResult:
         if user_input is not None:
             self._pending_user_input.update(user_input)
+            return await self.async_step_presets_b()
+
+        return self._show_presets_a()
+
+    async def async_step_presets_b(self, user_input=None) -> FlowResult:
+        if user_input is not None:
+            self._pending_user_input.update(user_input)
             if self._is_expert_mode:
                 return await self.async_step_advanced()
             return await self.async_step_summary()
 
-        return self._show_presets()
+        return self._show_presets_b()
 
     async def async_step_advanced(self, user_input=None) -> FlowResult:
         if user_input is not None:
@@ -1033,11 +1091,18 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     async def async_step_reconfigure_presets(self, user_input=None) -> FlowResult:
         if user_input is not None:
             self._pending_user_input.update(user_input)
+            return await self.async_step_reconfigure_presets_b()
+
+        return self._show_presets_a(step_id="reconfigure_presets")
+
+    async def async_step_reconfigure_presets_b(self, user_input=None) -> FlowResult:
+        if user_input is not None:
+            self._pending_user_input.update(user_input)
             if self._is_expert_mode:
                 return await self.async_step_reconfigure_advanced()
             return await self.async_step_reconfigure_summary()
 
-        return self._show_presets(step_id="reconfigure_presets")
+        return self._show_presets_b(step_id="reconfigure_presets_b")
 
     async def async_step_reconfigure_advanced(self, user_input=None) -> FlowResult:
         if user_input is not None:
