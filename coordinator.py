@@ -126,8 +126,12 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             self.async_set_updated_data(merged)
 
     async def _async_update_icy(self, data: dict[str, Any], location: str) -> None:
-        """Fetch ICY metadata for a UPNP stream and push updated data to HA."""
-        # Only re-fetch if the stream location changed or we don't have data yet
+        """Fetch ICY metadata and station meta for a UPNP stream, then push to HA."""
+        # Ensure station meta (name + favicon) is cached for this location
+        if location not in self._station_meta:
+            await self._async_resolve_station_meta(location)
+
+        # Only re-fetch ICY bytes if the stream location changed
         if location != self._last_icy_location or not data.get("icy_meta"):
             self._last_icy_location = location
             icy = await async_fetch_icy_meta(self.hass, location)

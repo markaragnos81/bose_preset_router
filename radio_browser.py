@@ -54,11 +54,13 @@ async def async_lookup_station(hass: HomeAssistant, url: str) -> dict[str, str]:
         if result:
             break
 
-    # Fill in favicon from DuckDuckGo when Radio Browser has none
-    if result and not result.get("favicon"):
-        result["favicon"] = _duckduckgo_favicon(url)
-    elif not result:
-        result = {}
+    # Always fill favicon from DuckDuckGo when Radio Browser has none or station unknown
+    if not result.get("favicon"):
+        ddg = _duckduckgo_favicon(url)
+        if result:
+            result["favicon"] = ddg
+        else:
+            result = {"name": "", "favicon": ddg}
 
     _station_cache[url] = result
     return result
