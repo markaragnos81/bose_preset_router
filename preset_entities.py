@@ -153,8 +153,7 @@ class BosePresetBinarySensor(
 
     @property
     def is_on(self) -> bool:
-        current_preset = self._current_preset
-        return int(current_preset.get("id", 0)) == self._preset_id if current_preset else False
+        return self.coordinator.active_preset == self._preset_id
 
     @property
     def icon(self) -> str:

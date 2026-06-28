@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.3] - 2026-06-28
+
+### Fixed
+
+- `active_preset` und Binary Sensors liefern jetzt zuverlaessig den aktiven Preset: statt der fragilen `now_playing`-Matching-Logik wird der Wert direkt vom Router beim `nowSelectionUpdated`-WebSocket-Event gesetzt und zurueckgesetzt wenn der Bose in Standby geht
+
 ## [0.6.2] - 2026-06-28
 
 ### Added

@@ -475,6 +475,13 @@ class BosePresetRouterManager:
                         coordinator = self._get_coordinator(bose_ip)
                         if coordinator is not None:
                             self.hass.async_create_task(coordinator.async_request_refresh())
+                            if "nowPlayingUpdated" in message:
+                                source = ""
+                                src_match = re.search(r'source="([^"]*)"', message)
+                                if src_match:
+                                    source = src_match.group(1).upper()
+                                if source in {"STANDBY", ""}:
+                                    coordinator.active_preset = None
 
                         if "nowSelectionUpdated" not in message or "<preset id=" not in message:
                             continue
@@ -486,6 +493,10 @@ class BosePresetRouterManager:
                         preset = int(match.group(1))
                         if preset not in PRESET_IDS:
                             continue
+
+                        coordinator = self._get_coordinator(bose_ip)
+                        if coordinator is not None:
+                            coordinator.active_preset = preset
 
                         item_name_match = ITEM_RE.search(message)
                         item_name = item_name_match.group(1) if item_name_match else None

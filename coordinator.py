@@ -26,6 +26,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.entry = entry
         self.subentry_id = subentry_id
         self.device = device
+        self.active_preset: int | None = None
         self.api = BoseSoundTouchApi(
             hass,
             host=device[CONF_BOSE_IP],
