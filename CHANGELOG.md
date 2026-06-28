@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.5] - 2026-06-28
+
+### Added
+
+- Neuer Routing-Modus `direct`: Presets werden direkt per UPNP auf dem Bose-Geraet abgespielt, ohne Music Assistant oder einen anderen Zielplayer. Lautstaerke wird dabei ebenfalls direkt am Bose-Geraet gesetzt. Der Modus ist im Geraete-Setup unter "Routing" als dritte Option waehlbar.
+
 ## [0.6.4] - 2026-06-28
 
 ### Changed

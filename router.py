@@ -24,6 +24,7 @@ from .const import (
     CONF_NOTIFY_ON_PRESS,
     CONF_PLAYBACK_VERIFY_ATTEMPTS,
     CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
+    CONF_ROUTING_MODE,
     CONF_STRICT_BOSE_CONFIRMATION,
     CONF_TOLERANT_BOSE_CONFIRMATION,
     DATA_COORDINATORS,
@@ -33,6 +34,8 @@ from .const import (
     DEFAULT_STRICT_BOSE_CONFIRMATION,
     DEFAULT_TOLERANT_BOSE_CONFIRMATION,
     PRESET_IDS,
+    ROUTING_MODE_DIRECT,
+    ROUTING_MODE_NONE,
     WS_PORT,
     preset_enabled_key,
     preset_url_key,
@@ -559,6 +562,21 @@ class BosePresetRouterManager:
 
         if not stream_url:
             _LOGGER.warning("No stream configured for %s preset %s", device_name, preset)
+            return
+
+        routing_mode = str(device.get(CONF_ROUTING_MODE) or ROUTING_MODE_NONE)
+        if routing_mode == ROUTING_MODE_DIRECT:
+            coordinator = self._get_coordinator(device[CONF_BOSE_IP])
+            if coordinator is None:
+                _LOGGER.warning("No coordinator for direct routing: device=%s", device_name)
+                return
+            if target_volume is not None:
+                try:
+                    await coordinator.api.async_set_volume(int(target_volume))
+                except Exception as err:
+                    _LOGGER.warning("Failed to set volume for direct routing: %s", err)
+            await coordinator.api.async_select_preset(preset)
+            _LOGGER.info("Direct routing: device=%s preset=%s", device_name, preset)
             return
 
         if not ma_player:

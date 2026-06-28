@@ -27,7 +27,7 @@ Pro konfiguriertem Bose-Geraet legt die Integration folgende Home-Assistant-Enti
 - Erkennt Bose-Preset-Tastendruecke ueber den SoundTouch-Websocket auf Port `8080`
 - Unterstuetzt mehrere Bose-Geraete innerhalb einer Integration
 - Ordnet die Presets `1` bis `6` individuellen Stream-URLs zu
-- Startet die Wiedergabe auf einem ausgewaehlten Music-Assistant- bzw. Home-Assistant-`media_player`
+- Drei Routing-Modi: keiner (nur Bose-Player), direkt via UPNP (kein Music Assistant benoetigt), Weiterleitung an Music-Assistant- bzw. Home-Assistant-`media_player`
 - Optionale Standardlautstaerke und Preset-spezifische Lautstaerke
 - Entprellung fuer wiederholte Tastendruecke
 - Verifikation der Stream-Uebergabe mit Retry-Logik
@@ -106,7 +106,8 @@ Pro Bose-Geraet koennen folgende Werte konfiguriert werden:
 
 - Name des Lautsprechers
 - Bose-IP-Adresse
-- Zielplayer fuer Music Assistant (optional)
+- Routing-Modus (keiner / direkt via UPNP / Weiterleitung an anderen Player)
+- Zielplayer fuer Music Assistant (nur bei Modus "Weiterleitung")
 - Optionale Standardlautstaerke
 - Pro Preset:
   - Stream-URL (Preset ist aktiv, sobald eine URL eingetragen ist)

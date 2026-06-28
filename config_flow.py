@@ -24,6 +24,7 @@ from .const import (
     CONF_DEFAULT_VOLUME,
     CONF_MA_PLAYER,
     CONF_NOTIFY_ON_PRESS,
+    CONF_ROUTING_MODE,
     CONF_PLAYBACK_VERIFY_ATTEMPTS,
     CONF_PLAYBACK_VERIFY_DELAY_SECONDS,
     CONF_STRICT_BOSE_CONFIRMATION,
@@ -48,6 +49,7 @@ MANUAL_SETUP_METHOD = "manual"
 SETUP_MODE_QUICK = "quick"
 SETUP_MODE_EXPERT = "expert"
 ROUTING_MODE_NONE = "none"
+ROUTING_MODE_DIRECT = "direct"
 ROUTING_MODE_PLAYER = "player"
 
 ATTR_SETUP_METHOD = "setup_method"
@@ -182,8 +184,12 @@ def _routing_mode_options() -> list[selector.SelectOptionDict]:
             label="Only create the Bose player",
         ),
         selector.SelectOptionDict(
+            value=ROUTING_MODE_DIRECT,
+            label="Play presets directly on Bose via UPNP (no Music Assistant needed)",
+        ),
+        selector.SelectOptionDict(
             value=ROUTING_MODE_PLAYER,
-            label="Create Bose player and route presets to another player",
+            label="Route presets to another player (Music Assistant)",
         ),
     ]
 
@@ -278,6 +284,9 @@ def _ssdp_value(discovery_info: Any, *keys: str) -> str:
 
 
 def _routing_mode_from_data(data: dict) -> str:
+    stored = str(data.get(CONF_ROUTING_MODE) or "").strip()
+    if stored == ROUTING_MODE_DIRECT:
+        return ROUTING_MODE_DIRECT
     return ROUTING_MODE_PLAYER if str(data.get(CONF_MA_PLAYER) or "").strip() else ROUTING_MODE_NONE
 
 
@@ -286,10 +295,14 @@ def _finalize_device_data(normalized_input: dict) -> dict:
     final_data.pop(ATTR_SETUP_METHOD, None)
     final_data.pop(ATTR_SETUP_MODE, None)
     routing_mode = str(final_data.pop(ATTR_ROUTING_MODE, ROUTING_MODE_NONE) or ROUTING_MODE_NONE)
-    if routing_mode != ROUTING_MODE_PLAYER:
+    if routing_mode == ROUTING_MODE_DIRECT:
+        final_data[CONF_ROUTING_MODE] = ROUTING_MODE_DIRECT
         final_data.pop(CONF_MA_PLAYER, None)
-    elif not str(final_data.get(CONF_MA_PLAYER) or "").strip():
+    elif routing_mode == ROUTING_MODE_PLAYER and str(final_data.get(CONF_MA_PLAYER) or "").strip():
+        final_data.pop(CONF_ROUTING_MODE, None)
+    else:
         final_data.pop(CONF_MA_PLAYER, None)
+        final_data.pop(CONF_ROUTING_MODE, None)
     return final_data
 
 
@@ -609,12 +622,15 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         if routing_mode == ROUTING_MODE_PLAYER and routing_target:
             routing_status = "Preset-Weiterleitung an einen anderen Player"
             routing_target_text = routing_target
+        elif routing_mode == ROUTING_MODE_DIRECT:
+            routing_status = "Direkte Wiedergabe auf Bose via UPNP"
+            routing_target_text = "Bose-Geraet direkt"
         else:
             routing_status = "Nur Bose-Player anlegen"
             routing_target_text = "Kein Routingziel"
 
         notes: list[str] = []
-        if routing_mode != ROUTING_MODE_PLAYER:
+        if routing_mode not in (ROUTING_MODE_PLAYER, ROUTING_MODE_DIRECT):
             notes.append("Preset-Routing bleibt zunaechst deaktiviert.")
         if active_presets:
             notes.append("Presets werden automatisch auf dem Bose-Geraet gespeichert.")

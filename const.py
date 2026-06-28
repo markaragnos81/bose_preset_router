@@ -15,6 +15,11 @@ CONF_NAME = "name"
 CONF_BOSE_IP = "bose_ip"
 CONF_MA_PLAYER = "ma_player"
 CONF_DEFAULT_VOLUME = "default_volume"
+CONF_ROUTING_MODE = "routing_mode"
+
+ROUTING_MODE_NONE = "none"
+ROUTING_MODE_DIRECT = "direct"
+ROUTING_MODE_PLAYER = "player"
 
 ATTR_DEVICE = "device"
 ATTR_PRESET = "preset"
