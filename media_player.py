@@ -190,6 +190,11 @@ class BoseSoundTouchMediaPlayer(
         return None
 
     @property
+    def media_track(self) -> str | None:
+        now_playing = self._data.get("now_playing", {})
+        return str(now_playing.get("track") or "").strip() or None
+
+    @property
     def media_channel(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
         return (
@@ -259,7 +264,14 @@ class BoseSoundTouchMediaPlayer(
             "source_account": now_playing.get("source_account"),
             "source_type": now_playing.get("source_type"),
             "station_name": now_playing.get("station_name"),
+            "track": now_playing.get("track"),
+            "description": now_playing.get("description"),
+            "location": now_playing.get("location"),
+            "play_status": now_playing.get("play_status"),
             "device_id": info.get("device_id"),
+            "model": info.get("type"),
+            "network_type": info.get("network_type"),
+            "account": info.get("account"),
             "presets_available": len(self._presets),
             "sources_available": len(self._sources),
             "zone_role": self._zone_role(),
