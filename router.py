@@ -4,6 +4,7 @@ import asyncio
 import logging
 import re
 import time
+import xml.etree.ElementTree as ET
 from typing import Any
 from urllib.parse import unquote, urlsplit
 
@@ -459,6 +460,33 @@ class BosePresetRouterManager:
 
         return False, f"{current_source}_metadata_unchanged"
 
+    @staticmethod
+    def _parse_now_playing_update(message: str) -> dict[str, Any] | None:
+        """Parse a nowPlayingUpdated WS message into a now_playing dict."""
+        try:
+            root = ET.fromstring(message)
+            np_el = root.find(".//nowPlayingUpdated/nowPlaying")
+            if np_el is None:
+                return None
+            content_item = np_el.find("ContentItem")
+            return {
+                "source": np_el.get("source", ""),
+                "source_account": np_el.get("sourceAccount", ""),
+                "device_id": np_el.get("deviceID", ""),
+                "item_name": np_el.findtext("ContentItem/itemName", default=""),
+                "track": np_el.findtext("track", default=""),
+                "artist": np_el.findtext("artist", default=""),
+                "album": np_el.findtext("album", default=""),
+                "station_name": np_el.findtext("stationName", default=""),
+                "play_status": np_el.findtext("playStatus", default=""),
+                "description": np_el.findtext("description", default=""),
+                "image": np_el.findtext("art", default=""),
+                "location": content_item.get("location", "") if content_item is not None else "",
+                "source_type": content_item.get("source", "") if content_item is not None else "",
+            }
+        except ET.ParseError:
+            return None
+
     def async_start(self) -> None:
         self._stop_event.clear()
         self._tasks.clear()
@@ -499,7 +527,14 @@ class BosePresetRouterManager:
                             _LOGGER.debug("Raw websocket message for %s: %s", name, message)
 
                         coordinator = self._get_coordinator(bose_ip)
-                        if coordinator is not None:
+
+                        if coordinator is not None and "nowPlayingUpdated" in message:
+                            now_playing = self._parse_now_playing_update(message)
+                            if now_playing is not None:
+                                self.hass.async_create_task(coordinator.push_now_playing(now_playing))
+                            else:
+                                self.hass.async_create_task(coordinator.async_request_refresh())
+                        elif coordinator is not None:
                             self.hass.async_create_task(coordinator.async_request_refresh())
 
                         if "nowSelectionUpdated" not in message or "<preset id=" not in message:

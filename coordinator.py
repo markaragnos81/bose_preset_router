@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import logging
-import xml.etree.ElementTree as ET
 from datetime import timedelta
 from typing import Any
 from urllib.parse import urlsplit
@@ -13,7 +12,6 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
 from .radio_browser import async_fetch_icy_meta, async_lookup_station
-from .websocket import BoseSoundTouchWebSocket
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,7 +31,6 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.active_preset: int | None = None
         self._station_meta: dict[str, dict[str, str]] = {}
         self._last_icy_location: str = ""
-        self._ws: BoseSoundTouchWebSocket | None = None
         self.api = BoseSoundTouchApi(
             hass,
             host=device[CONF_BOSE_IP],
@@ -64,81 +61,23 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         info = self.data.get("info", {}) if self.data else {}
         return str(info.get("device_id") or self.bose_ip)
 
-    # ------------------------------------------------------------------
-    # WebSocket event handling
-    # ------------------------------------------------------------------
-
-    def _on_ws_event(self, event_type: str, element: ET.Element) -> None:
-        """Called from the WebSocket listener for each incoming event."""
-        if event_type == "nowPlayingUpdated":
-            self._handle_now_playing_updated(element)
-        elif event_type == "volumeUpdated":
-            self._handle_volume_updated(element)
-        elif event_type in ("presetsUpdated", "recentsUpdated"):
-            # Full refresh needed to pick up preset changes
-            self.hass.async_create_task(self.async_request_refresh())
-
-    def _handle_now_playing_updated(self, element: ET.Element) -> None:
-        np = element.find("nowPlaying")
-        if np is None:
+    async def push_now_playing(self, now_playing: dict[str, Any]) -> None:
+        """Called by router when a nowPlayingUpdated WS event arrives."""
+        if not self.data:
             return
+        merged = dict(self.data)
+        merged["now_playing"] = now_playing
 
-        content_item = np.find("ContentItem")
-        now_playing: dict[str, Any] = {
-            "source": np.get("source", ""),
-            "source_account": np.get("sourceAccount", ""),
-            "device_id": np.get("deviceID", ""),
-            "item_name": np.findtext("ContentItem/itemName", default=""),
-            "track": np.findtext("track", default=""),
-            "artist": np.findtext("artist", default=""),
-            "album": np.findtext("album", default=""),
-            "station_name": np.findtext("stationName", default=""),
-            "play_status": np.findtext("playStatus", default=""),
-            "description": np.findtext("description", default=""),
-            "image": np.findtext("art", default=""),
-            "location": content_item.get("location", "") if content_item is not None else "",
-            "source_type": content_item.get("source", "") if content_item is not None else "",
-        }
-
-        if self.data:
-            merged = dict(self.data)
-            merged["now_playing"] = now_playing
-            # Trigger async ICY fetch if UPNP stream location changed
-            location = now_playing.get("location", "")
-            if str(now_playing.get("source", "")).upper() == "UPNP" and location:
-                self.hass.async_create_task(self._async_update_icy(merged, location))
-            else:
-                merged["icy_meta"] = {}
-                self.async_set_updated_data(merged)
-
-    def _handle_volume_updated(self, element: ET.Element) -> None:
-        vol = element.find("volume")
-        if vol is None:
-            return
-        volume: dict[str, Any] = {
-            "target": int(vol.findtext("targetvolume", default="0") or 0),
-            "actual": int(vol.findtext("actualvolume", default="0") or 0),
-            "muted": (vol.findtext("muteenabled", default="false") or "").strip().lower() == "true",
-        }
-        if self.data:
-            merged = dict(self.data)
-            merged["volume"] = volume
-            self.async_set_updated_data(merged)
-
-    async def _async_update_icy(self, data: dict[str, Any], location: str) -> None:
-        """Fetch ICY metadata and station meta for a UPNP stream, then push to HA."""
-        # Ensure station meta (name + favicon) is cached for this location
-        if location not in self._station_meta:
-            await self._async_resolve_station_meta(location)
-
-        # Only re-fetch ICY bytes if the stream location changed
-        if location != self._last_icy_location or not data.get("icy_meta"):
-            self._last_icy_location = location
+        location = str(now_playing.get("location") or "").strip()
+        if str(now_playing.get("source") or "").upper() == "UPNP" and location:
+            if location not in self._station_meta:
+                await self._async_resolve_station_meta(location)
             icy = await async_fetch_icy_meta(self.hass, location)
+            merged["icy_meta"] = icy
         else:
-            icy = data.get("icy_meta", {})
-        data["icy_meta"] = icy
-        self.async_set_updated_data(data)
+            merged["icy_meta"] = {}
+
+        self.async_set_updated_data(merged)
 
     # ------------------------------------------------------------------
     # HTTP polling (fallback / full state refresh)
@@ -183,14 +122,8 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             )
         await self._async_provision_presets()
 
-        # Start WebSocket listener for real-time events
-        self._ws = BoseSoundTouchWebSocket(self.hass, self.bose_ip, self._on_ws_event)
-        await self._ws.async_start()
-
     async def async_stop(self) -> None:
-        if self._ws:
-            await self._ws.async_stop()
-            self._ws = None
+        pass
 
     # ------------------------------------------------------------------
     # Station metadata & presets
