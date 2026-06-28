@@ -303,7 +303,12 @@ class BoseSoundTouchMediaPlayer(
             "bose_source": now_playing.get("source"),
             "source_account": now_playing.get("source_account"),
             "source_type": now_playing.get("source_type"),
-            "station_name": now_playing.get("station_name"),
+            "station_name": (
+                str(now_playing.get("station_name") or "").strip()
+                or str(now_playing.get("item_name") or "").strip()
+                or (self.coordinator.get_station_meta(str(now_playing.get("location") or "")).get("name", "") if now_playing.get("location") else "")
+                or None
+            ),
             "track": now_playing.get("track"),
             "description": now_playing.get("description"),
             "location": now_playing.get("location"),
