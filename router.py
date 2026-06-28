@@ -147,10 +147,30 @@ class BosePresetRouterManager:
             return device
 
         normalized_name = device_name.casefold()
-        return next(
+        device = next(
             (d for d in self.devices if str(d.get(CONF_NAME, "")).casefold() == normalized_name),
             None,
         )
+        if device is not None:
+            return device
+
+        # Partial match: search term is a substring of the configured name (case-insensitive).
+        # Allows short names like "Büro" to match "Bose Soundtouch 20 - Büro".
+        matches = [d for d in self.devices if normalized_name in str(d.get(CONF_NAME, "")).casefold()]
+        if len(matches) == 1:
+            _LOGGER.debug(
+                "Resolved device %r via partial name match → %r",
+                device_name,
+                matches[0].get(CONF_NAME),
+            )
+            return matches[0]
+        if len(matches) > 1:
+            _LOGGER.warning(
+                "Ambiguous partial device name %r matches %s — skipping",
+                device_name,
+                [d.get(CONF_NAME) for d in matches],
+            )
+        return None
 
     def _get_coordinator(self, bose_ip: str):
         entry_data = self.hass.data.get(DOMAIN, {}).get(self.entry.entry_id, {})
