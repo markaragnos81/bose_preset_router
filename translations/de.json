@@ -123,34 +123,29 @@
           }
         },
         "presets": {
-          "title": "Presets 1–3",
-          "description": "Trage Stream-URLs fuer Preset-Knoepfe 1–3 ein. Leer lassen, um die globale Standard-URL zu verwenden.",
+          "title": "Stream-Presets",
+          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier geraetespezifische URLs ein.",
           "data": {
+            "use_preset_defaults": "Globale Standard-URLs verwenden (keine geraetespezifischen Presets)",
             "preset_1": "Stream-URL fuer Preset 1",
-            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_2": "Stream-URL fuer Preset 2",
-            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
             "preset_3": "Stream-URL fuer Preset 3",
-            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)"
-          }
-        },
-        "presets_b": {
-          "title": "Presets 4–6",
-          "description": "Trage Stream-URLs fuer Preset-Knoepfe 4–6 ein. Leer lassen, um die globale Standard-URL zu verwenden.",
-          "data": {
             "preset_4": "Stream-URL fuer Preset 4",
-            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
             "preset_5": "Stream-URL fuer Preset 5",
-            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
-            "preset_6": "Stream-URL fuer Preset 6",
-            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
+            "preset_6": "Stream-URL fuer Preset 6"
           }
         },
         "advanced": {
           "title": "Erweiterte Optionen",
           "description": "Passe optionale Startlautstaerke und weitere erweiterte Werte an, die fuer ein schnelles Setup nicht noetig sind.",
           "data": {
-            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)"
+            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)",
+            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
+            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
+            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
+            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
+            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
+            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
           }
         },
         "summary": {
@@ -187,34 +182,29 @@
           }
         },
         "reconfigure_presets": {
-          "title": "Presets 1–3 bearbeiten",
-          "description": "Aktualisiere Stream-URLs fuer Preset-Knoepfe 1–3. Leer lassen, um die globale Standard-URL zu verwenden.",
+          "title": "Stream-Presets bearbeiten",
+          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier geraetespezifische URLs ein.",
           "data": {
+            "use_preset_defaults": "Globale Standard-URLs verwenden (keine geraetespezifischen Presets)",
             "preset_1": "Stream-URL fuer Preset 1",
-            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_2": "Stream-URL fuer Preset 2",
-            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
             "preset_3": "Stream-URL fuer Preset 3",
-            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)"
-          }
-        },
-        "reconfigure_presets_b": {
-          "title": "Presets 4–6 bearbeiten",
-          "description": "Aktualisiere Stream-URLs fuer Preset-Knoepfe 4–6. Leer lassen, um die globale Standard-URL zu verwenden.",
-          "data": {
             "preset_4": "Stream-URL fuer Preset 4",
-            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
             "preset_5": "Stream-URL fuer Preset 5",
-            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
-            "preset_6": "Stream-URL fuer Preset 6",
-            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
+            "preset_6": "Stream-URL fuer Preset 6"
           }
         },
         "reconfigure_advanced": {
           "title": "Erweiterte Optionen bearbeiten",
           "description": "Passe optionale erweiterte Werte fuer dieses Bose-Geraet an.",
           "data": {
-            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)"
+            "default_volume": "Bevorzugte Startlautstaerke in Prozent (optional)",
+            "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
+            "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
+            "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
+            "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
+            "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
+            "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)"
           }
         },
         "reconfigure_summary": {

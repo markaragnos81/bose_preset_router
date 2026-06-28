@@ -8,6 +8,16 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.11] - 2026-06-28
+
+### Changed
+
+- Geraete-Preset-Setup auf eine einzige kompakte Seite zusammengefasst (statt zwei Seiten fuer Presets 1–3 und 4–6)
+- Neuer Schalter "Globale Standard-URLs verwenden" auf der Preset-Seite: bei aktiviertem Schalter werden keine geraetespezifischen URLs gespeichert und die globalen Standards greifen automatisch
+- Per-Preset-Lautstaerken (Expertenmodus) in den "Erweiterten Optionen"-Schritt verschoben
+- Zusammenfassung zeigt jetzt "6 Presets (globale Standards)" statt "Keine", wenn der Schalter aktiv ist
+- Behebt verwaiste Geraete-Eintraege unter "keine Untereintrag" durch Ergaenzung von `config_subentry_id` in den Entity-Geraetemeldungen
+
 ## [0.6.10] - 2026-06-28
 
 ### Fixed
