@@ -4,11 +4,41 @@
     "step": {
       "user": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Choose how the integration should behave overall, including notifications, logging, and how carefully stream handoffs should be checked."
+        "description": "Choose how the integration should behave overall. You can also set default stream URLs for presets 1–6 that apply to all Bose devices unless overridden per device.",
+        "data": {
+          "notify_on_press": "Show a notification when a preset is pressed",
+          "debug_logging": "Enable detailed log output",
+          "debounce_seconds": "Ignore repeated presses for this many seconds",
+          "playback_verify_attempts": "Retry stream handoff this many times",
+          "playback_verify_delay_seconds": "Wait this many seconds between checks",
+          "strict_bose_confirmation": "Stop routing when Bose preset confirmation fails",
+          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation",
+          "default_preset_1": "Default stream URL for preset 1 (optional)",
+          "default_preset_2": "Default stream URL for preset 2 (optional)",
+          "default_preset_3": "Default stream URL for preset 3 (optional)",
+          "default_preset_4": "Default stream URL for preset 4 (optional)",
+          "default_preset_5": "Default stream URL for preset 5 (optional)",
+          "default_preset_6": "Default stream URL for preset 6 (optional)"
+        }
       },
       "reconfigure": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs."
+        "description": "Fine-tune notifications, logging, and the retry checks for reliable stream handoffs. Default stream URLs apply to all devices unless overridden per device.",
+        "data": {
+          "notify_on_press": "Show a notification when a preset is pressed",
+          "debug_logging": "Enable detailed log output",
+          "debounce_seconds": "Ignore repeated presses for this many seconds",
+          "playback_verify_attempts": "Retry stream handoff this many times",
+          "playback_verify_delay_seconds": "Wait this many seconds between checks",
+          "strict_bose_confirmation": "Stop routing when Bose preset confirmation fails",
+          "tolerant_bose_confirmation": "Use a more tolerant Bose preset confirmation",
+          "default_preset_1": "Default stream URL for preset 1 (optional)",
+          "default_preset_2": "Default stream URL for preset 2 (optional)",
+          "default_preset_3": "Default stream URL for preset 3 (optional)",
+          "default_preset_4": "Default stream URL for preset 4 (optional)",
+          "default_preset_5": "Default stream URL for preset 5 (optional)",
+          "default_preset_6": "Default stream URL for preset 6 (optional)"
+        }
       }
     },
     "error": {

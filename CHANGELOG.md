@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.8] - 2026-06-28
+
+### Added
+
+- Globale Standard-Stream-URLs fuer Presets 1–6 in den Haupteinstellungen der Integration. Die URLs gelten fuer alle Bose-Geraete und werden pro Geraet durch eine eigene URL ueberschrieben. Praktisch, um dieselben Streams nicht fuer jedes Geraet einzeln einzutragen.
+
 ## [0.6.7] - 2026-06-28
 
 ### Changed

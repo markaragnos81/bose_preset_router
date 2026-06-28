@@ -37,6 +37,7 @@ from .const import (
     ROUTING_MODE_DIRECT,
     ROUTING_MODE_NONE,
     WS_PORT,
+    default_preset_url_key,
     preset_enabled_key,
     preset_url_key,
     preset_volume_key,
@@ -104,7 +105,9 @@ class BosePresetRouterManager:
         ]
 
     def _preset_config(self, device: dict[str, Any], preset: int) -> dict[str, Any]:
-        stream_url = device.get(preset_url_key(preset))
+        stream_url = str(device.get(preset_url_key(preset)) or "").strip() or None
+        if not stream_url:
+            stream_url = str(self.entry.data.get(default_preset_url_key(preset)) or "").strip() or None
         enabled_key = preset_enabled_key(preset)
         if enabled_key in device:
             enabled = bool(device[enabled_key])

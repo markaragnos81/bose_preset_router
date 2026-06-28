@@ -40,6 +40,7 @@ from .const import (
     PRESET_IDS,
     SUBENTRY_TYPE_DEVICE,
     WS_PORT,
+    default_preset_url_key,
     preset_url_key,
     preset_volume_key,
 )
@@ -93,6 +94,12 @@ def global_schema() -> vol.Schema:
                 CONF_TOLERANT_BOSE_CONFIRMATION,
                 default=DEFAULT_TOLERANT_BOSE_CONFIRMATION,
             ): selector.BooleanSelector(),
+            **{
+                vol.Optional(default_preset_url_key(p)): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
+                )
+                for p in PRESET_IDS
+            },
         }
     )
 

@@ -7,7 +7,7 @@
     "step": {
       "user": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Lege fest, wie sich die Integration insgesamt verhalten soll, inklusive Benachrichtigungen, Logging und der Pruefung der Stream-Uebergabe.",
+        "description": "Lege fest, wie sich die Integration insgesamt verhalten soll, inklusive Benachrichtigungen, Logging und der Pruefung der Stream-Uebergabe. Du kannst auch Standard-Stream-URLs fuer Presets 1–6 hinterlegen, die fuer alle Bose-Geraete gelten — sofern sie nicht pro Geraet ueberschrieben werden.",
         "data": {
           "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
           "debug_logging": "Ausfuehrliches Logging aktivieren",
@@ -15,12 +15,18 @@
           "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
           "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
           "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
-          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
+          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten",
+          "default_preset_1": "Standard-Stream-URL fuer Preset 1 (optional)",
+          "default_preset_2": "Standard-Stream-URL fuer Preset 2 (optional)",
+          "default_preset_3": "Standard-Stream-URL fuer Preset 3 (optional)",
+          "default_preset_4": "Standard-Stream-URL fuer Preset 4 (optional)",
+          "default_preset_5": "Standard-Stream-URL fuer Preset 5 (optional)",
+          "default_preset_6": "Standard-Stream-URL fuer Preset 6 (optional)"
         }
       },
       "reconfigure": {
         "title": "Bose SoundTouch LocalControl",
-        "description": "Passe Benachrichtigungen, Logging und die Wiederholungspruefung fuer eine zuverlaessige Stream-Uebergabe an.",
+        "description": "Passe Benachrichtigungen, Logging und die Wiederholungspruefung fuer eine zuverlaessige Stream-Uebergabe an. Standard-Stream-URLs gelten fuer alle Geraete, sofern sie nicht pro Geraet ueberschrieben werden.",
         "data": {
           "notify_on_press": "Benachrichtigung anzeigen, wenn ein Preset gedrueckt wird",
           "debug_logging": "Ausfuehrliches Logging aktivieren",
@@ -28,7 +34,13 @@
           "playback_verify_attempts": "Stream-Uebergabe so oft erneut pruefen",
           "playback_verify_delay_seconds": "So viele Sekunden zwischen den Pruefungen warten",
           "strict_bose_confirmation": "Routing abbrechen, wenn die Bose-Preset-Bestaetigung fehlschlaegt",
-          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten"
+          "tolerant_bose_confirmation": "Bose-Preset-Bestaetigung toleranter auswerten",
+          "default_preset_1": "Standard-Stream-URL fuer Preset 1 (optional)",
+          "default_preset_2": "Standard-Stream-URL fuer Preset 2 (optional)",
+          "default_preset_3": "Standard-Stream-URL fuer Preset 3 (optional)",
+          "default_preset_4": "Standard-Stream-URL fuer Preset 4 (optional)",
+          "default_preset_5": "Standard-Stream-URL fuer Preset 5 (optional)",
+          "default_preset_6": "Standard-Stream-URL fuer Preset 6 (optional)"
         }
       }
     },
