@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.15] - 2026-06-28
+
+### Fixed
+
+- Bose SoundTouch lehnt HTTPS-URLs in AVTransport und storePreset ab (Fehler 402 "No URI supplied"). `https://`-URLs werden jetzt automatisch auf `http://` herabgestuft, bevor sie an den Bose gesendet werden — sowohl beim AVTransport-Play als auch beim Preset-Speichern.
+
 ## [0.6.14] - 2026-06-28
 
 ### Fixed

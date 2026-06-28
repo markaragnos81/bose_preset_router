@@ -224,21 +224,32 @@ class BoseSoundTouchApi:
         ) as response:
             response.raise_for_status()
 
+    @staticmethod
+    def _to_http(url: str) -> str:
+        """Downgrade https:// to http:// — older Bose hardware rejects HTTPS on AVTransport."""
+        if url.startswith("https://"):
+            return "http://" + url[len("https://"):]
+        return url
+
     async def async_play_upnp_stream(self, stream_url: str) -> None:
         svc = "urn:schemas-upnp-org:service:AVTransport:1"
         path = "AVTransport/Control"
+        http_url = self._to_http(stream_url)
+        if http_url != stream_url:
+            _LOGGER.debug("Downgraded HTTPS→HTTP for AVTransport on %s: %s", self.device_name, http_url)
         await self._async_soap(path, svc, "Stop", "<InstanceID>0</InstanceID>")
         await self._async_soap(
             path,
             svc,
             "SetAVTransportURI",
             f"<InstanceID>0</InstanceID>"
-            f"<CurrentURI>{escape(stream_url)}</CurrentURI>"
+            f"<CurrentURI>{escape(http_url)}</CurrentURI>"
             f"<CurrentURIMetaData></CurrentURIMetaData>",
         )
         await self._async_soap(path, svc, "Play", "<InstanceID>0</InstanceID><Speed>1</Speed>")
 
     async def async_store_preset(self, preset_id: int, url: str, name: str) -> None:
+        url = self._to_http(url)
         body = (
             f'<?xml version="1.0" encoding="UTF-8" ?>'
             f'<preset id="{preset_id}">'
