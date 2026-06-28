@@ -231,12 +231,46 @@ class BoseSoundTouchApi:
             return "http://" + url[len("https://"):]
         return url
 
-    async def async_play_upnp_stream(self, stream_url: str) -> None:
+    @staticmethod
+    def _build_didl(url: str, name: str, favicon: str = "") -> str:
+        """Build DIDL-Lite XML for UPnP SetAVTransportURI CurrentURIMetaData."""
+        def esc(s: str) -> str:
+            return escape(str(s or ""))
+
+        mime = "audio/mpeg"
+        ext = url.split("?")[0].rsplit(".", 1)[-1].lower()
+        mime_map = {"m4a": "audio/aac", "aac": "audio/aac", "flac": "audio/flac",
+                    "ogg": "audio/ogg", "oga": "audio/ogg", "wav": "audio/wav"}
+        if ext in mime_map:
+            mime = mime_map[ext]
+
+        art = f"<upnp:albumArtURI>{esc(favicon)}</upnp:albumArtURI>" if favicon else ""
+        return (
+            '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" '
+            'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+            'xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/">'
+            '<item id="0" parentID="-1" restricted="1">'
+            f"<dc:title>{esc(name)}</dc:title>"
+            "<upnp:class>object.item.audioItem.audioBroadcast</upnp:class>"
+            f"{art}"
+            f'<res protocolInfo="http-get:*:{mime}:*">{esc(url)}</res>'
+            "</item>"
+            "</DIDL-Lite>"
+        )
+
+    async def async_play_upnp_stream(
+        self,
+        stream_url: str,
+        station_name: str = "",
+        station_favicon: str = "",
+    ) -> None:
         svc = "urn:schemas-upnp-org:service:AVTransport:1"
         path = "AVTransport/Control"
         http_url = self._to_http(stream_url)
         if http_url != stream_url:
             _LOGGER.debug("Downgraded HTTPS→HTTP for AVTransport on %s: %s", self.device_name, http_url)
+
+        didl = self._build_didl(http_url, station_name or "Stream", station_favicon)
         await self._async_soap(path, svc, "Stop", "<InstanceID>0</InstanceID>")
         await self._async_soap(
             path,
@@ -244,7 +278,7 @@ class BoseSoundTouchApi:
             "SetAVTransportURI",
             f"<InstanceID>0</InstanceID>"
             f"<CurrentURI>{escape(http_url)}</CurrentURI>"
-            f"<CurrentURIMetaData></CurrentURIMetaData>",
+            f"<CurrentURIMetaData>{escape(didl)}</CurrentURIMetaData>",
         )
         await self._async_soap(path, svc, "Play", "<InstanceID>0</InstanceID><Speed>1</Speed>")
 

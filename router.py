@@ -609,7 +609,12 @@ class BosePresetRouterManager:
             else:
                 _LOGGER.info("Direct routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
             try:
-                await coordinator.api.async_play_upnp_stream(stream_url)
+                meta = coordinator.get_station_meta(stream_url)
+                await coordinator.api.async_play_upnp_stream(
+                    stream_url,
+                    station_name=meta.get("name", ""),
+                    station_favicon=meta.get("favicon", ""),
+                )
             except Exception as err:
                 _LOGGER.warning("Direct routing: AVTransport play failed for %s preset=%s: %s", device_name, preset, err)
             return

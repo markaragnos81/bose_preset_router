@@ -11,6 +11,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
+from .radio_browser import async_lookup_station
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.subentry_id = subentry_id
         self.device = device
         self.active_preset: int | None = None
+        # Cache: stream_url → {"name": str, "favicon": str}
+        self._station_meta: dict[str, dict[str, str]] = {}
         self.api = BoseSoundTouchApi(
             hass,
             host=device[CONF_BOSE_IP],
@@ -86,21 +89,42 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             url = str(self.entry.data.get(default_preset_url_key(preset_id)) or "").strip()
         return url
 
+    def get_station_meta(self, url: str) -> dict[str, str]:
+        """Return cached station metadata for a stream URL."""
+        return self._station_meta.get(url, {})
+
+    async def _async_resolve_station_meta(self, url: str) -> dict[str, str]:
+        """Lookup station metadata, using cache first."""
+        if url in self._station_meta:
+            return self._station_meta[url]
+        meta = await async_lookup_station(self.hass, url)
+        if not meta:
+            # Fallback: derive a readable name from the hostname
+            fallback_name = self._station_name_from_url(url)
+            meta = {"name": fallback_name, "favicon": ""}
+        self._station_meta[url] = meta
+        return meta
+
     async def _async_provision_presets(self) -> None:
         for preset_id in PRESET_IDS:
             url = self._resolve_preset_url(preset_id)
             if not url:
                 continue
-            name = self._station_name_from_url(url) or f"Preset {preset_id}"
+            meta = await self._async_resolve_station_meta(url)
+            name = meta.get("name") or f"Preset {preset_id}"
             try:
                 await self.api.async_store_preset(preset_id, url, name)
-                _LOGGER.debug("Stored preset %s (%s) on %s (%s)", preset_id, name, self.device_name, self.bose_ip)
+                _LOGGER.debug(
+                    "Stored preset %s (%s) on %s (%s)", preset_id, name, self.device_name, self.bose_ip
+                )
             except Exception as err:
-                _LOGGER.debug("Could not store preset %s on %s (%s): %s", preset_id, self.device_name, self.bose_ip, err)
+                _LOGGER.debug(
+                    "Could not store preset %s on %s (%s): %s", preset_id, self.device_name, self.bose_ip, err
+                )
 
     @staticmethod
     def _station_name_from_url(url: str) -> str:
-        """Derive a readable station name from a stream URL hostname."""
+        """Derive a readable station name from a stream URL hostname (fallback)."""
         try:
             host = urlsplit(url).hostname or ""
             skip = {"www", "stream", "streams", "live", "listen", "audio", "icecast", "ice", "cdn", "media"}

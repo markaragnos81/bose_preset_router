@@ -123,23 +123,7 @@ class BoseSoundTouchMediaPlayer(
 
         current_preset = self._current_preset
         if current_preset is not None:
-            item_name = str(current_preset.get("item_name") or "").strip()
-            if item_name and item_name.lower().startswith("preset "):
-                # Bose was provisioned with generic "Preset N" name — try active preset instead
-                active_preset = self._active_bose_preset
-                if active_preset:
-                    better = str(active_preset.get("item_name") or "").strip()
-                    if better and not better.lower().startswith("preset "):
-                        return better
-            return item_name or self._preset_label(current_preset)
-
-        # Fallback for UPNP streams: use the Bose hardware preset name
-        active_preset = self._active_bose_preset
-        if active_preset:
-            name = str(active_preset.get("item_name") or "").strip()
-            if name:
-                return name
-            return self._preset_label(active_preset)
+            return str(current_preset.get("item_name") or "") or self._preset_label(current_preset)
 
         current_source = self._current_source_item
         if current_source is not None:
@@ -148,36 +132,13 @@ class BoseSoundTouchMediaPlayer(
         return None
 
     @property
-    def _active_bose_preset(self) -> dict[str, Any] | None:
-        """Bose hardware preset matching the coordinator's active_preset number."""
-        active = self.coordinator.active_preset
-        if not active:
-            return None
-        for preset in self._presets:
-            if str(preset.get("id")) == str(active):
-                return preset
-        return None
-
-    @property
     def media_artist(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
-        artist = str(now_playing.get("artist") or "").strip()
-        if artist:
-            return artist
-
-        source = str(now_playing.get("source") or "").upper()
-        if source == "UPNP":
-            location = str(now_playing.get("location") or "").strip()
-            if location:
-                try:
-                    from urllib.parse import urlsplit
-                    host = urlsplit(location).hostname or ""
-                    if host:
-                        return host
-                except Exception:
-                    pass
-
-        return str(now_playing.get("source") or "").strip() or None
+        return (
+            str(now_playing.get("artist") or "")
+            or str(now_playing.get("source") or "")
+            or None
+        )
 
     @property
     def media_album_name(self) -> str | None:
@@ -193,9 +154,17 @@ class BoseSoundTouchMediaPlayer(
     def media_image_url(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
         current_preset = self._current_preset
+
+        # Favicon from Radio Browser (cached in coordinator by stream URL)
+        location = str(now_playing.get("location") or "").strip()
+        cached_favicon = ""
+        if location:
+            cached_favicon = self.coordinator.get_station_meta(location).get("favicon", "")
+
         return (
             str(now_playing.get("image") or "").strip()
             or (str(current_preset.get("image") or "").strip() if current_preset is not None else "")
+            or cached_favicon
             or self._target_player_attr("entity_picture")
             or self._target_player_attr("media_image_url")
             or None
