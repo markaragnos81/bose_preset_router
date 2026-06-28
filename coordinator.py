@@ -9,7 +9,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import BoseSoundTouchApi
-from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS
+from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, preset_url_key
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -76,6 +76,18 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.device_name,
                 self.bose_ip,
             )
+        await self._async_provision_presets()
+
+    async def _async_provision_presets(self) -> None:
+        for preset_id in PRESET_IDS:
+            url = str(self.device.get(preset_url_key(preset_id)) or "").strip()
+            if not url:
+                continue
+            try:
+                await self.api.async_store_preset(preset_id, url, f"Preset {preset_id}")
+                _LOGGER.debug("Stored preset %s on %s (%s)", preset_id, self.device_name, self.bose_ip)
+            except Exception as err:
+                _LOGGER.debug("Could not store preset %s on %s (%s): %s", preset_id, self.device_name, self.bose_ip, err)
 
     async def async_stop(self) -> None:
         pass

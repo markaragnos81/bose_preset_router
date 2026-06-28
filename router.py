@@ -101,9 +101,15 @@ class BosePresetRouterManager:
         ]
 
     def _preset_config(self, device: dict[str, Any], preset: int) -> dict[str, Any]:
+        stream_url = device.get(preset_url_key(preset))
+        enabled_key = preset_enabled_key(preset)
+        if enabled_key in device:
+            enabled = bool(device[enabled_key])
+        else:
+            enabled = bool(stream_url)
         return {
-            "enabled": bool(device.get(preset_enabled_key(preset), True)),
-            "stream_url": device.get(preset_url_key(preset)),
+            "enabled": enabled,
+            "stream_url": stream_url,
             "volume": device.get(
                 preset_volume_key(preset),
                 device.get(CONF_DEFAULT_VOLUME),

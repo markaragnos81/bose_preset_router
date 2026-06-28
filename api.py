@@ -199,6 +199,18 @@ class BoseSoundTouchApi:
     async def async_previous_track(self) -> None:
         await self.async_send_key("PREV_TRACK")
 
+    async def async_store_preset(self, preset_id: int, url: str, name: str) -> None:
+        body = (
+            f'<?xml version="1.0" encoding="UTF-8" ?>'
+            f'<preset id="{preset_id}">'
+            f'<ContentItem source="UPNP" location="{escape(url)}" '
+            f'sourceAccount="UPnPUserName" isPresetable="true">'
+            f"<itemName>{escape(name)}</itemName>"
+            f"</ContentItem>"
+            f"</preset>"
+        )
+        await self._async_post_xml("storePreset", body)
+
     async def async_select_preset(self, preset_id: int) -> None:
         if preset_id < 1 or preset_id > 6:
             raise ValueError(f"Preset id must be between 1 and 6, got {preset_id}")

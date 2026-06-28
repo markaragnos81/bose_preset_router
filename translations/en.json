@@ -91,24 +91,18 @@
         },
         "presets": {
           "title": "Configure presets",
-          "description": "Configure all six presets in one overview. You can leave presets disabled and add them later.",
+          "description": "Enter a stream URL for each preset button you want to use. Presets with a URL are automatically stored on the Bose device so physical button presses are detected.",
           "data": {
-            "preset_1_enabled": "Use preset 1",
             "preset_1_volume": "Volume for preset 1 in percent (optional)",
             "preset_1": "Stream URL for preset 1",
-            "preset_2_enabled": "Use preset 2",
             "preset_2_volume": "Volume for preset 2 in percent (optional)",
             "preset_2": "Stream URL for preset 2",
-            "preset_3_enabled": "Use preset 3",
             "preset_3_volume": "Volume for preset 3 in percent (optional)",
             "preset_3": "Stream URL for preset 3",
-            "preset_4_enabled": "Use preset 4",
             "preset_4_volume": "Volume for preset 4 in percent (optional)",
             "preset_4": "Stream URL for preset 4",
-            "preset_5_enabled": "Use preset 5",
             "preset_5_volume": "Volume for preset 5 in percent (optional)",
             "preset_5": "Stream URL for preset 5",
-            "preset_6_enabled": "Use preset 6",
             "preset_6_volume": "Volume for preset 6 in percent (optional)",
             "preset_6": "Stream URL for preset 6"
           }
@@ -149,24 +143,18 @@
         },
         "reconfigure_presets": {
           "title": "Edit presets",
-          "description": "Adjust the preset overview. Disabled presets can remain empty.",
+          "description": "Update stream URLs for preset buttons. Presets with a URL are automatically stored on the Bose device so physical button presses are detected.",
           "data": {
-            "preset_1_enabled": "Use preset 1",
             "preset_1_volume": "Volume for preset 1 in percent (optional)",
             "preset_1": "Stream URL for preset 1",
-            "preset_2_enabled": "Use preset 2",
             "preset_2_volume": "Volume for preset 2 in percent (optional)",
             "preset_2": "Stream URL for preset 2",
-            "preset_3_enabled": "Use preset 3",
             "preset_3_volume": "Volume for preset 3 in percent (optional)",
             "preset_3": "Stream URL for preset 3",
-            "preset_4_enabled": "Use preset 4",
             "preset_4_volume": "Volume for preset 4 in percent (optional)",
             "preset_4": "Stream URL for preset 4",
-            "preset_5_enabled": "Use preset 5",
             "preset_5_volume": "Volume for preset 5 in percent (optional)",
             "preset_5": "Stream URL for preset 5",
-            "preset_6_enabled": "Use preset 6",
             "preset_6_volume": "Volume for preset 6 in percent (optional)",
             "preset_6": "Stream URL for preset 6"
           }
@@ -194,8 +182,6 @@
         "name_exists": "A device with this name already exists.",
         "name_required": "Enter a device name.",
         "no_devices_discovered": "No Bose devices were discovered on the network.",
-        "preset_url_required": "Enabled presets need a stream URL."
-        ,
         "target_player_required": "Choose a target player when preset routing is enabled."
       },
       "abort": {

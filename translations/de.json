@@ -94,24 +94,18 @@
         },
         "presets": {
           "title": "Presets konfigurieren",
-          "description": "Konfiguriere alle sechs Presets in einer Uebersicht. Du kannst Presets deaktiviert lassen und spaeter nachpflegen.",
+          "description": "Trage fuer jeden Preset-Knopf, den du nutzen moechtest, eine Stream-URL ein. Presets mit einer URL werden automatisch auf dem Bose-Geraet gespeichert, damit Tastendruecke am Geraet erkannt werden.",
           "data": {
-            "preset_1_enabled": "Preset 1 verwenden",
             "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_1": "Stream-URL fuer Preset 1",
-            "preset_2_enabled": "Preset 2 verwenden",
             "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
             "preset_2": "Stream-URL fuer Preset 2",
-            "preset_3_enabled": "Preset 3 verwenden",
             "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
             "preset_3": "Stream-URL fuer Preset 3",
-            "preset_4_enabled": "Preset 4 verwenden",
             "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
             "preset_4": "Stream-URL fuer Preset 4",
-            "preset_5_enabled": "Preset 5 verwenden",
             "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
             "preset_5": "Stream-URL fuer Preset 5",
-            "preset_6_enabled": "Preset 6 verwenden",
             "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)",
             "preset_6": "Stream-URL fuer Preset 6"
           }
@@ -152,24 +146,18 @@
         },
         "reconfigure_presets": {
           "title": "Presets bearbeiten",
-          "description": "Passe die Preset-Uebersicht an. Deaktivierte Presets koennen leer bleiben.",
+          "description": "Aktualisiere die Stream-URLs fuer die Preset-Knoepfe. Presets mit einer URL werden automatisch auf dem Bose-Geraet gespeichert, damit Tastendruecke am Geraet erkannt werden.",
           "data": {
-            "preset_1_enabled": "Preset 1 verwenden",
             "preset_1_volume": "Lautstaerke fuer Preset 1 in Prozent (optional)",
             "preset_1": "Stream-URL fuer Preset 1",
-            "preset_2_enabled": "Preset 2 verwenden",
             "preset_2_volume": "Lautstaerke fuer Preset 2 in Prozent (optional)",
             "preset_2": "Stream-URL fuer Preset 2",
-            "preset_3_enabled": "Preset 3 verwenden",
             "preset_3_volume": "Lautstaerke fuer Preset 3 in Prozent (optional)",
             "preset_3": "Stream-URL fuer Preset 3",
-            "preset_4_enabled": "Preset 4 verwenden",
             "preset_4_volume": "Lautstaerke fuer Preset 4 in Prozent (optional)",
             "preset_4": "Stream-URL fuer Preset 4",
-            "preset_5_enabled": "Preset 5 verwenden",
             "preset_5_volume": "Lautstaerke fuer Preset 5 in Prozent (optional)",
             "preset_5": "Stream-URL fuer Preset 5",
-            "preset_6_enabled": "Preset 6 verwenden",
             "preset_6_volume": "Lautstaerke fuer Preset 6 in Prozent (optional)",
             "preset_6": "Stream-URL fuer Preset 6"
           }
@@ -197,8 +185,6 @@
         "name_exists": "Ein Geraet mit diesem Namen existiert bereits.",
         "name_required": "Gib einen Geraetenamen ein.",
         "no_devices_discovered": "Es wurden keine Bose-Geraete im Netzwerk gefunden.",
-        "preset_url_required": "Aktive Presets brauchen eine Stream-URL."
-        ,
         "target_player_required": "Waehle einen Zielplayer aus, wenn Preset-Weiterleitung aktiviert werden soll."
       },
       "abort": {

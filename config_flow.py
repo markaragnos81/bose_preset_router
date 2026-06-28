@@ -39,7 +39,6 @@ from .const import (
     PRESET_IDS,
     SUBENTRY_TYPE_DEVICE,
     WS_PORT,
-    preset_enabled_key,
     preset_url_key,
     preset_volume_key,
 )
@@ -216,7 +215,6 @@ def advanced_schema() -> vol.Schema:
 def preset_schema(*, expert: bool) -> vol.Schema:
     schema: dict = {}
     for preset in PRESET_IDS:
-        schema[vol.Optional(preset_enabled_key(preset), default=False)] = selector.BooleanSelector()
         schema[vol.Optional(preset_url_key(preset))] = selector.TextSelector(
             selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
         )
@@ -241,8 +239,6 @@ def _normalize_device_input(user_input: dict) -> dict:
             normalized_input[key] = value
 
     normalized_input.setdefault(ATTR_ROUTING_MODE, ROUTING_MODE_NONE)
-    for preset in PRESET_IDS:
-        normalized_input.setdefault(preset_enabled_key(preset), False)
 
     return normalized_input
 
@@ -340,17 +336,12 @@ def _validate_device_input(
         errors[CONF_MA_PLAYER] = "target_player_required"
 
     for preset in PRESET_IDS:
-        enabled_key = preset_enabled_key(preset)
         url_key = preset_url_key(preset)
         volume_key = preset_volume_key(preset)
-        enabled = bool(normalized_input.get(enabled_key, False))
         url_value = str(normalized_input.get(url_key, "")).strip()
 
         if url_value and not _is_valid_url(url_value):
             errors[url_key] = "invalid_url"
-
-        if enabled and not url_value:
-            errors[url_key] = "preset_url_required"
 
         preset_volume = normalized_input.get(volume_key)
         if preset_volume is not None and not 0 <= float(preset_volume) <= 100:
@@ -370,7 +361,6 @@ def _device_title(data: dict) -> str:
 def _preset_fields(data: dict, *, expert: bool) -> dict:
     selected: dict = {}
     for preset in PRESET_IDS:
-        selected[preset_enabled_key(preset)] = bool(data.get(preset_enabled_key(preset), False))
         if preset_url_key(preset) in data:
             selected[preset_url_key(preset)] = data[preset_url_key(preset)]
         if expert and preset_volume_key(preset) in data:
@@ -382,7 +372,7 @@ def _active_presets(data: dict) -> list[int]:
     return [
         preset
         for preset in PRESET_IDS
-        if bool(data.get(preset_enabled_key(preset), False))
+        if str(data.get(preset_url_key(preset)) or "").strip()
     ]
 
 
@@ -489,6 +479,23 @@ async def _async_discover_bose_devices(
     return sorted(discovered.values(), key=lambda item: item["label"].casefold())
 
 
+async def _async_provision_device_presets(hass, device_data: dict) -> None:
+    bose_ip = str(device_data.get(CONF_BOSE_IP) or "").strip()
+    device_name = str(device_data.get(CONF_NAME) or bose_ip)
+    if not bose_ip:
+        return
+    api = BoseSoundTouchApi(hass, host=bose_ip, device_name=device_name)
+    for preset_id in PRESET_IDS:
+        url = str(device_data.get(preset_url_key(preset_id)) or "").strip()
+        if not url:
+            continue
+        try:
+            await api.async_store_preset(preset_id, url, f"Preset {preset_id}")
+            _LOGGER.debug("Stored preset %s on %s during setup", preset_id, bose_ip)
+        except Exception as err:
+            _LOGGER.warning("Could not store preset %s on %s during setup: %s", preset_id, bose_ip, err)
+
+
 class BosePresetRouterConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     VERSION = 1
 
@@ -547,8 +554,6 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         base: dict[str, Any] = {
             ATTR_ROUTING_MODE: ROUTING_MODE_NONE,
         }
-        for preset in PRESET_IDS:
-            base[preset_enabled_key(preset)] = False
         if subentry is not None:
             base.update(subentry.data)
             base[ATTR_ROUTING_MODE] = _routing_mode_from_data(subentry.data)
@@ -611,8 +616,10 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         notes: list[str] = []
         if routing_mode != ROUTING_MODE_PLAYER:
             notes.append("Preset-Routing bleibt zunaechst deaktiviert.")
-        if not active_presets:
-            notes.append("Es sind noch keine aktiven Presets konfiguriert.")
+        if active_presets:
+            notes.append("Presets werden automatisch auf dem Bose-Geraet gespeichert.")
+        else:
+            notes.append("Es sind noch keine Presets konfiguriert.")
         if self._is_expert_mode:
             notes.append("Expertenmodus aktiv.")
         else:
@@ -751,7 +758,6 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
             key
             for preset in PRESET_IDS
             for key in (
-                preset_enabled_key(preset),
                 preset_url_key(preset),
                 preset_volume_key(preset),
             )
@@ -901,6 +907,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
         if user_input is not None:
             final_data = _finalize_device_data(self._pending_user_input)
+            await _async_provision_device_presets(self.hass, final_data)
             return self.async_create_entry(
                 title=_device_title(final_data),
                 data=final_data,
@@ -995,6 +1002,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
         if user_input is not None:
             final_data = _finalize_device_data(self._pending_user_input)
+            await _async_provision_device_presets(self.hass, final_data)
             self.hass.config_entries.async_update_subentry(
                 entry,
                 subentry,
