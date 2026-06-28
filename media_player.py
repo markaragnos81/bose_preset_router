@@ -298,7 +298,7 @@ class BoseSoundTouchMediaPlayer(
         zone = self._data.get("zone", {})
         info = self._data.get("info", {})
         return {
-            "active_preset": self.coordinator.active_preset,
+            "active_preset": self._current_preset.get("id") if self._current_preset is not None else None,
             "bose_ip": self.coordinator.bose_ip,
             "bose_source": now_playing.get("source"),
             "source_account": now_playing.get("source_account"),
