@@ -364,7 +364,9 @@ async def async_remove_config_entry_device(
     config_entry: ConfigEntry,
     device_entry: dr.DeviceEntry,
 ) -> bool:
+    existing_subentry_ids = {se.subentry_id for se in config_entry.subentries.values()}
     domain_identifiers = {
         identifier[1] for identifier in device_entry.identifiers if identifier[0] == config_entry.domain
     }
-    return not any(identifier.startswith("subentry:") for identifier in domain_identifiers)
+    active_subentry_identifiers = {f"subentry:{sid}" for sid in existing_subentry_ids}
+    return not domain_identifiers.intersection(active_subentry_identifiers)
