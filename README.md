@@ -22,6 +22,7 @@ Pro konfiguriertem Bose-Geraet legt die Integration folgende Home-Assistant-Enti
   - per sechs Preset-Statussensoren zur Anzeige des aktuell aktiven Presets
 - Auto-Provisioning: konfigurierte Presets werden beim Setup und bei jedem HA-Start automatisch per `/storePreset` auf das Geraet geschrieben, damit physische Tasten zuverlaessig erkannt werden (kein Bose-Account erforderlich)
 - Quellen-Browsing und Quellen-Auswahl im `media_player`
+- Attribut `active_preset` am `media_player` — aktuell aktive Preset-Nummer als Integer, direkt fuer Automationen nutzbar
 - Multiroom-/Zonen-Services fuer Bose-SoundTouch-Geraete
 - Discovery-unterstuetztes Setup ueber SSDP und lokale Bose-API-Pruefung
 - Erkennt Bose-Preset-Tastendruecke ueber den SoundTouch-Websocket auf Port `8080`

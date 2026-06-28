@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.2] - 2026-06-28
+
+### Added
+
+- Neues Attribut `active_preset` am `media_player`: gibt die aktuell aktive Preset-Nummer als Integer zurueck (z.B. `5`), oder `null` wenn kein Preset aktiv ist — direkt nutzbar in Automationen ohne Binary Sensors
+
 ## [0.6.1] - 2026-06-28
 
 ### Changed
