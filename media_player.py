@@ -292,7 +292,6 @@ class BoseSoundTouchMediaPlayer(
             "manufacturer": "Bose",
             "model": model,
             "configuration_url": f"http://{self.coordinator.bose_ip}:8090/info",
-            "config_subentry_id": self.coordinator.subentry_id,
         }
 
     @property

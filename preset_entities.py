@@ -80,7 +80,6 @@ class BosePresetSelect(
     def device_info(self) -> dict[str, Any]:
         return {
             "identifiers": {(self.coordinator.entry.domain, self.coordinator.registry_identifier)},
-            "config_subentry_id": self.coordinator.subentry_id,
         }
 
     async def async_select_option(self, option: str) -> None:
@@ -119,7 +118,6 @@ class BosePresetButton(
     def device_info(self) -> dict[str, Any]:
         return {
             "identifiers": {(self.coordinator.entry.domain, self.coordinator.registry_identifier)},
-            "config_subentry_id": self.coordinator.subentry_id,
         }
 
     async def async_press(self) -> None:
@@ -173,5 +171,4 @@ class BosePresetBinarySensor(
     def device_info(self) -> dict[str, Any]:
         return {
             "identifiers": {(self.coordinator.entry.domain, self.coordinator.registry_identifier)},
-            "config_subentry_id": self.coordinator.subentry_id,
         }

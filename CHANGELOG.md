@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.12] - 2026-06-28
+
+### Fixed
+
+- Hotfix: `config_subentry_id` aus den Entity-`device_info`-Dicts entfernt — das Feld wird von dieser HA-Version nicht unterstuetzt und verhinderte, dass Entities ueberhaupt angelegt wurden ("Error adding entity None")
+
 ## [0.6.11] - 2026-06-28
 
 ### Changed
