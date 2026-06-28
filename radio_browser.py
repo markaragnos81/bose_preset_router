@@ -54,13 +54,13 @@ async def async_lookup_station(hass: HomeAssistant, url: str) -> dict[str, str]:
         if result:
             break
 
-    # Always fill favicon from DuckDuckGo when Radio Browser has none or station unknown
+    # Always fill favicon when Radio Browser has none or station unknown
     if not result.get("favicon"):
-        ddg = _duckduckgo_favicon(url)
+        fav = _best_favicon(url)
         if result:
-            result["favicon"] = ddg
+            result["favicon"] = fav
         else:
-            result = {"name": "", "favicon": ddg}
+            result = {"name": "", "favicon": fav}
 
     _station_cache[url] = result
     return result
@@ -95,12 +95,15 @@ async def _query_by_url(session, url: str) -> dict[str, str]:
     return {}
 
 
-def _duckduckgo_favicon(url: str) -> str:
-    """Return a DuckDuckGo favicon CDN URL for the given stream URL's domain."""
+def _best_favicon(url: str) -> str:
+    """Return the best available favicon URL for the given stream URL's domain.
+
+    Uses Google's favicon CDN with sz=128 for a usable image in HA media cards.
+    """
     try:
         host = urlsplit(url).hostname or ""
         if host:
-            return f"https://icons.duckduckgo.com/ip3/{host}.ico"
+            return f"https://www.google.com/s2/favicons?domain={host}&sz=128"
     except Exception:
         pass
     return ""

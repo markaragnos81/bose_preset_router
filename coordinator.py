@@ -153,13 +153,22 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             url = self._resolve_preset_url(preset_id)
             if not url:
                 continue
-            meta = await self._async_resolve_station_meta(url)
-            name = meta.get("name") or f"Preset {preset_id}"
+            try:
+                meta = await self._async_resolve_station_meta(url)
+            except Exception as err:
+                _LOGGER.warning(
+                    "Station meta lookup failed for preset %s url=%s on %s: %s",
+                    preset_id, url, self.device_name, err,
+                )
+                meta = {}
+            name = meta.get("name") or self._station_name_from_url(url) or f"Preset {preset_id}"
+            favicon = meta.get("favicon", "")
+            _LOGGER.debug(
+                "Provisioning preset %s on %s: name=%r favicon=%r url=%s",
+                preset_id, self.device_name, name, favicon, url,
+            )
             try:
                 await self.api.async_store_preset(preset_id, url, name)
-                _LOGGER.debug(
-                    "Stored preset %s (%s) on %s (%s)", preset_id, name, self.device_name, self.bose_ip
-                )
             except Exception as err:
                 _LOGGER.debug(
                     "Could not store preset %s on %s (%s): %s", preset_id, self.device_name, self.bose_ip, err

@@ -244,7 +244,7 @@ class BoseSoundTouchApi:
         if ext in mime_map:
             mime = mime_map[ext]
 
-        art = f"<upnp:albumArtURI>{esc(favicon)}</upnp:albumArtURI>" if favicon else ""
+        art = f"<upnp:albumArtURI>{esc(favicon)}</upnp:albumArtURI>"
         return (
             '<DIDL-Lite xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/" '
             'xmlns:dc="http://purl.org/dc/elements/1.1/" '
