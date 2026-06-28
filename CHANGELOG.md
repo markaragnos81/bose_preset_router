@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.13] - 2026-06-28
+
+### Changed
+
+- Direkt-Routing (UPNP): Playback laeuft jetzt ueber UPnP AVTransport (`SetAVTransportURI` + `Play`) statt ueber `storePreset` + Tastendruck. Das entspricht dem Vorgehen von Music Assistant und funktioniert zuverlaessig auch dann, wenn der Bose den Stream-Hostnamen per DNS nicht selbst aufloesen kann (z.B. `.lan`-Adressen die nur im lokalen Custom-DNS bekannt sind).
+
 ## [0.6.12] - 2026-06-28
 
 ### Fixed

@@ -569,21 +569,29 @@ class BosePresetRouterManager:
 
         routing_mode = str(device.get(CONF_ROUTING_MODE) or ROUTING_MODE_NONE)
         if routing_mode == ROUTING_MODE_DIRECT:
-            if reason == "websocket":
-                # Physical button already selected the preset — nothing to do
-                _LOGGER.debug("Direct routing: physical press on %s preset=%s, no action needed", device_name, preset)
-                return
             coordinator = self._get_coordinator(device[CONF_BOSE_IP])
             if coordinator is None:
                 _LOGGER.warning("No coordinator for direct routing: device=%s", device_name)
+                return
+            stream_url = coordinator._resolve_preset_url(preset)
+            if not stream_url:
+                _LOGGER.warning("Direct routing: no URL configured for device=%s preset=%s", device_name, preset)
                 return
             if target_volume is not None:
                 try:
                     await coordinator.api.async_set_volume(int(target_volume))
                 except Exception as err:
                     _LOGGER.warning("Failed to set volume for direct routing: %s", err)
-            await coordinator.api.async_select_preset(preset)
-            _LOGGER.info("Direct routing: device=%s preset=%s", device_name, preset)
+            if reason == "websocket":
+                # Physical button press: Bose already selected the preset via storePreset.
+                # Push the stream via AVTransport so playback actually starts.
+                _LOGGER.debug("Direct routing (physical): device=%s preset=%s url=%s", device_name, preset, stream_url)
+            else:
+                _LOGGER.info("Direct routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
+            try:
+                await coordinator.api.async_play_upnp_stream(stream_url)
+            except Exception as err:
+                _LOGGER.warning("Direct routing: AVTransport play failed for %s preset=%s: %s", device_name, preset, err)
             return
 
         if not ma_player:

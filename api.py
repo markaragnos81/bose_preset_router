@@ -199,6 +199,45 @@ class BoseSoundTouchApi:
     async def async_previous_track(self) -> None:
         await self.async_send_key("PREV_TRACK")
 
+    async def _async_soap(self, path: str, service: str, action: str, body_inner: str) -> None:
+        session = async_get_clientsession(self.hass)
+        url = f"http://{self.host}:8091/{path.lstrip('/')}"
+        soap = (
+            '<?xml version="1.0"?>'
+            '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" '
+            's:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">'
+            "<s:Body>"
+            f'<u:{action} xmlns:u="{service}">'
+            f"{body_inner}"
+            f"</u:{action}>"
+            "</s:Body>"
+            "</s:Envelope>"
+        )
+        async with session.post(
+            url,
+            data=soap.encode("utf-8"),
+            timeout=aiohttp.ClientTimeout(total=5),
+            headers={
+                "Content-Type": 'text/xml; charset="utf-8"',
+                "SOAPAction": f'"{service}#{action}"',
+            },
+        ) as response:
+            response.raise_for_status()
+
+    async def async_play_upnp_stream(self, stream_url: str) -> None:
+        svc = "urn:schemas-upnp-org:service:AVTransport:1"
+        path = "AVTransport/Control"
+        await self._async_soap(path, svc, "Stop", "<InstanceID>0</InstanceID>")
+        await self._async_soap(
+            path,
+            svc,
+            "SetAVTransportURI",
+            f"<InstanceID>0</InstanceID>"
+            f"<CurrentURI>{escape(stream_url)}</CurrentURI>"
+            f"<CurrentURIMetaData></CurrentURIMetaData>",
+        )
+        await self._async_soap(path, svc, "Play", "<InstanceID>0</InstanceID><Speed>1</Speed>")
+
     async def async_store_preset(self, preset_id: int, url: str, name: str) -> None:
         body = (
             f'<?xml version="1.0" encoding="UTF-8" ?>'
