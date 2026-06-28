@@ -144,7 +144,10 @@ async def async_fetch_icy_meta(hass: HomeAssistant, url: str) -> dict[str, str]:
             stream_title = ""
             if meta_len:
                 meta_bytes = await resp.content.readexactly(meta_len)
-                raw = meta_bytes.decode("utf-8", errors="replace").rstrip("\x00")
+                try:
+                    raw = meta_bytes.decode("utf-8").rstrip("\x00")
+                except UnicodeDecodeError:
+                    raw = meta_bytes.decode("latin-1").rstrip("\x00")
                 m = re.search(r"StreamTitle='([^']*)'", raw)
                 if m:
                     stream_title = m.group(1).strip()
