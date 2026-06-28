@@ -19,6 +19,7 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import CONF_MA_PLAYER, DATA_COORDINATORS
 from .coordinator import BoseSoundTouchCoordinator
+from .radio_browser import parse_icy_stream_title
 
 PRESET_SOURCE_PREFIX = "Preset "
 CONTENT_TYPE_LIBRARY = "library"
@@ -117,6 +118,12 @@ class BoseSoundTouchMediaPlayer(
     @property
     def media_title(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
+
+        # ICY track title (e.g. "Black Dog" from "Led Zeppelin - Black Dog")
+        _, icy_title = self._icy_artist_title
+        if icy_title:
+            return icy_title
+
         now_playing_title = self._now_playing_title(now_playing)
         if now_playing_title:
             return now_playing_title
@@ -132,17 +139,41 @@ class BoseSoundTouchMediaPlayer(
         return None
 
     @property
+    def _icy_artist_title(self) -> tuple[str, str]:
+        """Parse ICY StreamTitle into (artist, title). Returns ('', '') when unavailable."""
+        icy = self._data.get("icy_meta", {})
+        stream_title = str(icy.get("stream_title") or "").strip()
+        if stream_title:
+            return parse_icy_stream_title(stream_title)
+        return "", ""
+
+    @property
     def media_artist(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
-        return (
-            str(now_playing.get("artist") or "")
-            or str(now_playing.get("source") or "")
-            or None
-        )
+        # Native artist from Bose (e.g. Spotify/TIDAL)
+        native_artist = str(now_playing.get("artist") or "").strip()
+        if native_artist:
+            return native_artist
+        # ICY stream artist (e.g. "Led Zeppelin" from "Led Zeppelin - Black Dog")
+        icy_artist, _ = self._icy_artist_title
+        if icy_artist:
+            return icy_artist
+        # Station name from ICY headers as last resort
+        icy = self._data.get("icy_meta", {})
+        icy_name = str(icy.get("icy_name") or "").strip()
+        if icy_name:
+            return icy_name
+        return str(now_playing.get("source") or "").strip() or None
 
     @property
     def media_album_name(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
+        # When showing ICY artist/track, use the station name as "album"
+        icy_artist, _ = self._icy_artist_title
+        if icy_artist:
+            station = str(now_playing.get("item_name") or "").strip()
+            if station:
+                return station
         return (
             str(now_playing.get("album") or "")
             or str(now_playing.get("station_name") or "")

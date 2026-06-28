@@ -11,7 +11,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
-from .radio_browser import async_lookup_station
+from .radio_browser import async_fetch_icy_meta, async_lookup_station
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -71,6 +71,19 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         snapshot["device_name"] = self.device_name
         snapshot["bose_ip"] = self.bose_ip
+
+        # Fetch live ICY metadata when a UPNP stream is playing
+        now_playing = snapshot.get("now_playing", {})
+        if str(now_playing.get("source") or "").upper() == "UPNP":
+            location = str(now_playing.get("location") or "").strip()
+            if location:
+                icy = await async_fetch_icy_meta(self.hass, location)
+                snapshot["icy_meta"] = icy
+            else:
+                snapshot["icy_meta"] = {}
+        else:
+            snapshot["icy_meta"] = {}
+
         return snapshot
 
     async def async_start(self) -> None:
