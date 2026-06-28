@@ -477,13 +477,6 @@ class BosePresetRouterManager:
                             self.hass.async_create_task(coordinator.async_request_refresh())
 
                         if "nowSelectionUpdated" not in message or "<preset id=" not in message:
-                            if coordinator is not None and "nowPlayingUpdated" in message:
-                                src_match = re.search(r'source="([^"]*)"', message)
-                                source = src_match.group(1).upper() if src_match else ""
-                                if source in {"STANDBY", ""}:
-                                    coordinator.active_preset = None
-                                    if coordinator.data is not None:
-                                        coordinator.async_set_updated_data(coordinator.data)
                             continue
 
                         match = PRESET_RE.search(message)
