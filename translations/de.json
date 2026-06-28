@@ -86,9 +86,15 @@
         },
         "routing": {
           "title": "Routing waehlen",
-          "description": "Entscheide, ob nur der Bose-Player angelegt werden soll oder ob Bose-Presets zusaetzlich an einen anderen Player weitergeleitet werden sollen.",
+          "description": "Entscheide, ob nur der Bose-Player angelegt werden soll, ob Presets direkt per UPNP auf dem Bose abgespielt werden sollen, oder ob sie an einen anderen Player weitergeleitet werden sollen.",
           "data": {
-            "routing_mode": "Was soll eingerichtet werden?",
+            "routing_mode": "Was soll eingerichtet werden?"
+          }
+        },
+        "routing_player": {
+          "title": "Zielplayer waehlen",
+          "description": "Waehle den Music-Assistant- oder Home-Assistant-Player, an den Bose-Presets weitergeleitet werden sollen.",
+          "data": {
             "ma_player": "Zielplayer fuer Preset-Weiterleitung"
           }
         },
@@ -138,9 +144,15 @@
         },
         "reconfigure_routing": {
           "title": "Routing bearbeiten",
-          "description": "Passe an, ob das Bose-Geraet nur als Player angelegt sein soll oder ob Presets an einen anderen Player weitergeleitet werden sollen.",
+          "description": "Passe an, ob das Bose-Geraet nur als Player angelegt sein soll, ob Presets direkt per UPNP abgespielt werden sollen, oder ob sie an einen anderen Player weitergeleitet werden sollen.",
           "data": {
-            "routing_mode": "Was soll eingerichtet werden?",
+            "routing_mode": "Was soll eingerichtet werden?"
+          }
+        },
+        "reconfigure_routing_player": {
+          "title": "Zielplayer bearbeiten",
+          "description": "Waehle den Music-Assistant- oder Home-Assistant-Player, an den Bose-Presets weitergeleitet werden sollen.",
+          "data": {
             "ma_player": "Zielplayer fuer Preset-Weiterleitung"
           }
         },

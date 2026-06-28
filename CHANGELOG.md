@@ -8,6 +8,18 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.7] - 2026-06-28
+
+### Changed
+
+- Routing-Setup in zwei separate Schritte aufgeteilt: erst Routing-Modus waehlen, dann — nur bei Modus "Weiterleitung" — Zielplayer auswaehlen. Das Zielplayer-Dropdown erscheint damit nicht mehr unnoetig bei "Nur Bose-Player" oder "Direkt via UPNP".
+
+## [0.6.6] - 2026-06-28
+
+### Fixed
+
+- Verwaiste Geraete (Subentry wurde geloescht) koennen jetzt im HA UI geloescht werden
+
 ## [0.6.5] - 2026-06-28
 
 ### Added

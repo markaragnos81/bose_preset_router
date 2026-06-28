@@ -83,9 +83,15 @@
         },
         "routing": {
           "title": "Choose routing",
-          "description": "Decide whether only the Bose player should be created or whether Bose presets should also be routed to another player.",
+          "description": "Decide whether only the Bose player should be created, whether presets should play directly on the Bose via UPNP, or whether they should be routed to another player.",
           "data": {
-            "routing_mode": "What should be set up?",
+            "routing_mode": "What should be set up?"
+          }
+        },
+        "routing_player": {
+          "title": "Choose target player",
+          "description": "Select the Music Assistant or Home Assistant media player that Bose presets should be routed to.",
+          "data": {
             "ma_player": "Target player for preset routing"
           }
         },
@@ -135,9 +141,15 @@
         },
         "reconfigure_routing": {
           "title": "Edit routing",
-          "description": "Adjust whether the Bose device should only exist as a player or whether presets should be routed to another player.",
+          "description": "Adjust whether the Bose device should only exist as a player, play presets directly via UPNP, or route presets to another player.",
           "data": {
-            "routing_mode": "What should be set up?",
+            "routing_mode": "What should be set up?"
+          }
+        },
+        "reconfigure_routing_player": {
+          "title": "Edit target player",
+          "description": "Select the Music Assistant or Home Assistant media player that Bose presets should be routed to.",
+          "data": {
             "ma_player": "Target player for preset routing"
           }
         },

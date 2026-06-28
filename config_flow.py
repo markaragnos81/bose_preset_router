@@ -203,7 +203,14 @@ def routing_schema() -> vol.Schema:
                     mode=selector.SelectSelectorMode.LIST,
                 )
             ),
-            vol.Optional(CONF_MA_PLAYER): selector.EntitySelector(
+        }
+    )
+
+
+def routing_player_schema() -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Required(CONF_MA_PLAYER): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="media_player")
             ),
         }
@@ -878,11 +885,31 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     async def async_step_routing(self, user_input=None) -> FlowResult:
         if user_input is not None:
             self._pending_user_input.update(user_input)
+            if str(user_input.get(ATTR_ROUTING_MODE)) == ROUTING_MODE_PLAYER:
+                return await self.async_step_routing_player()
+            self._pending_user_input.pop(CONF_MA_PLAYER, None)
             return await self.async_step_presets()
 
         if ATTR_ROUTING_MODE not in self._pending_user_input:
             self._pending_user_input[ATTR_ROUTING_MODE] = _routing_mode_from_data(self._pending_user_input)
         return self._show_routing()
+
+    async def async_step_routing_player(self, user_input=None) -> FlowResult:
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if not str(user_input.get(CONF_MA_PLAYER) or "").strip():
+                errors[CONF_MA_PLAYER] = "target_player_required"
+            else:
+                self._pending_user_input.update(user_input)
+                return await self.async_step_presets()
+        return self.async_show_form(
+            step_id="routing_player",
+            data_schema=self.add_suggested_values_to_schema(
+                routing_player_schema(),
+                {CONF_MA_PLAYER: self._pending_user_input.get(CONF_MA_PLAYER)},
+            ),
+            errors=errors,
+        )
 
     async def async_step_presets(self, user_input=None) -> FlowResult:
         if user_input is not None:
@@ -972,9 +999,29 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     async def async_step_reconfigure_routing(self, user_input=None) -> FlowResult:
         if user_input is not None:
             self._pending_user_input.update(user_input)
+            if str(user_input.get(ATTR_ROUTING_MODE)) == ROUTING_MODE_PLAYER:
+                return await self.async_step_reconfigure_routing_player()
+            self._pending_user_input.pop(CONF_MA_PLAYER, None)
             return await self.async_step_reconfigure_presets()
 
         return self._show_routing(step_id="reconfigure_routing")
+
+    async def async_step_reconfigure_routing_player(self, user_input=None) -> FlowResult:
+        errors: dict[str, str] = {}
+        if user_input is not None:
+            if not str(user_input.get(CONF_MA_PLAYER) or "").strip():
+                errors[CONF_MA_PLAYER] = "target_player_required"
+            else:
+                self._pending_user_input.update(user_input)
+                return await self.async_step_reconfigure_presets()
+        return self.async_show_form(
+            step_id="reconfigure_routing_player",
+            data_schema=self.add_suggested_values_to_schema(
+                routing_player_schema(),
+                {CONF_MA_PLAYER: self._pending_user_input.get(CONF_MA_PLAYER)},
+            ),
+            errors=errors,
+        )
 
     async def async_step_reconfigure_presets(self, user_input=None) -> FlowResult:
         if user_input is not None:
