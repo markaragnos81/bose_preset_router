@@ -8,6 +8,13 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.16] - 2026-06-28
+
+### Changed
+
+- Preset-Setup-Seite aufgeteilt: der "Globale Standards verwenden"-Schalter erscheint jetzt auf einer eigenen Seite. Bei Aktivierung wird die URL-Eingabe übersprungen; bei Deaktivierung folgt eine separate Seite mit allen 6 URL-Feldern. Verhindert das Abschneiden von Preset 6 durch die HA-Formular-Feldgrenze.
+- Zwei weitere Umlauts-Fehler in config_flow.py behoben ("zunaechst" → "zunächst", "Geraet" → "Gerät")
+
 ## [0.6.15] - 2026-06-28
 
 ### Fixed

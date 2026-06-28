@@ -121,9 +121,15 @@
         },
         "presets": {
           "title": "Stream presets",
-          "description": "If you have set global default URLs, the toggle below is all you need. Otherwise enter device-specific URLs.",
+          "description": "Do you want to use the global default URLs for all presets, or configure device-specific URLs?",
           "data": {
-            "use_preset_defaults": "Use global default URLs (no device-specific presets)",
+            "use_preset_defaults": "Use global default URLs (no device-specific presets)"
+          }
+        },
+        "presets_urls": {
+          "title": "Device-specific stream URLs",
+          "description": "Enter the stream URLs for this device. Leave empty to disable a preset.",
+          "data": {
             "preset_1": "Stream URL for preset 1",
             "preset_2": "Stream URL for preset 2",
             "preset_3": "Stream URL for preset 3",
@@ -180,9 +186,15 @@
         },
         "reconfigure_presets": {
           "title": "Edit stream presets",
-          "description": "If you have set global default URLs, the toggle below is all you need. Otherwise enter device-specific URLs.",
+          "description": "Do you want to use the global default URLs for all presets, or configure device-specific URLs?",
           "data": {
-            "use_preset_defaults": "Use global default URLs (no device-specific presets)",
+            "use_preset_defaults": "Use global default URLs (no device-specific presets)"
+          }
+        },
+        "reconfigure_presets_urls": {
+          "title": "Edit device-specific stream URLs",
+          "description": "Enter the stream URLs for this device. Leave empty to disable a preset.",
+          "data": {
             "preset_1": "Stream URL for preset 1",
             "preset_2": "Stream URL for preset 2",
             "preset_3": "Stream URL for preset 3",

@@ -124,9 +124,15 @@
         },
         "presets": {
           "title": "Stream-Presets",
-          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier gerätespezifische URLs ein.",
+          "description": "Sollen die globalen Standard-URLs für alle Presets gelten, oder möchtest du gerätespezifische URLs konfigurieren?",
           "data": {
-            "use_preset_defaults": "Globale Standard-URLs verwenden (keine gerätespezifischen Presets)",
+            "use_preset_defaults": "Globale Standard-URLs verwenden (keine gerätespezifischen Presets)"
+          }
+        },
+        "presets_urls": {
+          "title": "Gerätespezifische Stream-URLs",
+          "description": "Trage die Stream-URLs für dieses Gerät ein. Leer lassen, um ein Preset zu deaktivieren.",
+          "data": {
             "preset_1": "Stream-URL für Preset 1",
             "preset_2": "Stream-URL für Preset 2",
             "preset_3": "Stream-URL für Preset 3",
@@ -183,9 +189,15 @@
         },
         "reconfigure_presets": {
           "title": "Stream-Presets bearbeiten",
-          "description": "Wenn du globale Standard-URLs hinterlegt hast, reicht der Schalter oben. Andernfalls trage hier gerätespezifische URLs ein.",
+          "description": "Sollen die globalen Standard-URLs für alle Presets gelten, oder möchtest du gerätespezifische URLs konfigurieren?",
           "data": {
-            "use_preset_defaults": "Globale Standard-URLs verwenden (keine gerätespezifischen Presets)",
+            "use_preset_defaults": "Globale Standard-URLs verwenden (keine gerätespezifischen Presets)"
+          }
+        },
+        "reconfigure_presets_urls": {
+          "title": "Gerätespezifische Stream-URLs bearbeiten",
+          "description": "Trage die Stream-URLs für dieses Gerät ein. Leer lassen, um ein Preset zu deaktivieren.",
+          "data": {
             "preset_1": "Stream-URL für Preset 1",
             "preset_2": "Stream-URL für Preset 2",
             "preset_3": "Stream-URL für Preset 3",

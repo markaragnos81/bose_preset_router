@@ -240,15 +240,21 @@ def advanced_schema(*, expert: bool = False) -> vol.Schema:
     return vol.Schema(schema)
 
 
-def preset_schema_combined() -> vol.Schema:
-    schema: dict = {
-        vol.Required(CONF_USE_PRESET_DEFAULTS, default=True): selector.BooleanSelector(),
-    }
-    for p in PRESET_IDS:
-        schema[vol.Optional(preset_url_key(p))] = selector.TextSelector(
-            selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
-        )
-    return vol.Schema(schema)
+def preset_defaults_toggle_schema() -> vol.Schema:
+    return vol.Schema(
+        {vol.Required(CONF_USE_PRESET_DEFAULTS, default=True): selector.BooleanSelector()}
+    )
+
+
+def preset_urls_schema() -> vol.Schema:
+    return vol.Schema(
+        {
+            vol.Optional(preset_url_key(p)): selector.TextSelector(
+                selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
+            )
+            for p in PRESET_IDS
+        }
+    )
 
 
 def _is_valid_url(value: str) -> bool:
@@ -688,7 +694,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
             routing_target_text = routing_target
         elif routing_mode == ROUTING_MODE_DIRECT:
             routing_status = "Direkte Wiedergabe auf Bose via UPNP"
-            routing_target_text = "Bose-Geraet direkt"
+            routing_target_text = "Bose-Gerät direkt"
         else:
             routing_status = "Nur Bose-Player anlegen"
             routing_target_text = "Kein Routingziel"
@@ -700,11 +706,11 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
 
         notes: list[str] = []
         if routing_mode not in (ROUTING_MODE_PLAYER, ROUTING_MODE_DIRECT):
-            notes.append("Preset-Routing bleibt zunaechst deaktiviert.")
+            notes.append("Preset-Routing bleibt zunächst deaktiviert.")
         if use_defaults and not active_presets:
-            notes.append("Globale Standard-URLs werden fuer alle Presets verwendet.")
+            notes.append("Globale Standard-URLs werden für alle Presets verwendet.")
         elif active_presets:
-            notes.append("Presets werden automatisch auf dem Bose-Geraet gespeichert.")
+            notes.append("Presets werden automatisch auf dem Bose-Gerät gespeichert.")
         else:
             notes.append("Keine Presets konfiguriert – globale Standards greifen falls vorhanden.")
         if self._is_expert_mode:
@@ -800,12 +806,19 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         )
 
     def _show_presets(self, *, step_id: str = "presets", errors: dict[str, str] | None = None) -> FlowResult:
+        defaults = {CONF_USE_PRESET_DEFAULTS: self._pending_user_input.get(CONF_USE_PRESET_DEFAULTS, True)}
         return self.async_show_form(
             step_id=step_id,
-            data_schema=self.add_suggested_values_to_schema(
-                preset_schema_combined(),
-                _preset_fields(self._pending_user_input, expert=self._is_expert_mode),
-            ),
+            data_schema=self.add_suggested_values_to_schema(preset_defaults_toggle_schema(), defaults),
+            errors=errors or {},
+        )
+
+    def _show_presets_urls(self, *, step_id: str = "presets_urls", errors: dict[str, str] | None = None) -> FlowResult:
+        url_defaults = _preset_fields(self._pending_user_input, expert=self._is_expert_mode)
+        url_defaults.pop(CONF_USE_PRESET_DEFAULTS, None)
+        return self.async_show_form(
+            step_id=step_id,
+            data_schema=self.add_suggested_values_to_schema(preset_urls_schema(), url_defaults),
             errors=errors or {},
         )
 
@@ -868,7 +881,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         if routing_errors:
             return self._show_routing(step_id=routing_step_id, errors=routing_errors)
         if preset_errors:
-            return self._show_presets(step_id=presets_step_id, errors=preset_errors)
+            return self._show_presets_urls(step_id=f"{presets_step_id}_urls", errors=preset_errors)
         if advanced_errors and self._is_expert_mode:
             return self._show_advanced(step_id=advanced_step_id, errors=advanced_errors)
 
@@ -978,11 +991,22 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     async def async_step_presets(self, user_input=None) -> FlowResult:
         if user_input is not None:
             self._pending_user_input.update(user_input)
+            if not user_input.get(CONF_USE_PRESET_DEFAULTS, True):
+                return await self.async_step_presets_urls()
             if self._is_expert_mode:
                 return await self.async_step_advanced()
             return await self.async_step_summary()
 
         return self._show_presets()
+
+    async def async_step_presets_urls(self, user_input=None) -> FlowResult:
+        if user_input is not None:
+            self._pending_user_input.update(user_input)
+            if self._is_expert_mode:
+                return await self.async_step_advanced()
+            return await self.async_step_summary()
+
+        return self._show_presets_urls()
 
     async def async_step_advanced(self, user_input=None) -> FlowResult:
         if user_input is not None:
@@ -1090,11 +1114,22 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
     async def async_step_reconfigure_presets(self, user_input=None) -> FlowResult:
         if user_input is not None:
             self._pending_user_input.update(user_input)
+            if not user_input.get(CONF_USE_PRESET_DEFAULTS, True):
+                return await self.async_step_reconfigure_presets_urls()
             if self._is_expert_mode:
                 return await self.async_step_reconfigure_advanced()
             return await self.async_step_reconfigure_summary()
 
         return self._show_presets(step_id="reconfigure_presets")
+
+    async def async_step_reconfigure_presets_urls(self, user_input=None) -> FlowResult:
+        if user_input is not None:
+            self._pending_user_input.update(user_input)
+            if self._is_expert_mode:
+                return await self.async_step_reconfigure_advanced()
+            return await self.async_step_reconfigure_summary()
+
+        return self._show_presets_urls(step_id="reconfigure_presets_urls")
 
     async def async_step_reconfigure_advanced(self, user_input=None) -> FlowResult:
         if user_input is not None:
