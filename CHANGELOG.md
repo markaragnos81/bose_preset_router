@@ -8,6 +8,12 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 - No unreleased changes yet.
 
+## [0.6.10] - 2026-06-28
+
+### Fixed
+
+- Direkt-Routing (UPNP): physischer Tastendruck auf dem Bose loeste `async_select_preset` ein zweites Mal aus (doppelter Tastendruck). Bei `reason=websocket` wird jetzt fruehzeitig zurueckgekehrt, da der Bose das Preset bereits selbst gewaehlt hat.
+
 ## [0.6.9] - 2026-06-28
 
 ### Changed
