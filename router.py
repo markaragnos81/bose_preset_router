@@ -637,21 +637,59 @@ class BosePresetRouterManager:
                     await coordinator.api.async_set_volume(int(target_volume))
                 except Exception as err:
                     _LOGGER.warning("Failed to set volume for direct routing: %s", err)
+
             if reason == "websocket":
-                # Physical button press: Bose already selected the preset via storePreset.
-                # Push the stream via AVTransport so playback actually starts.
-                _LOGGER.debug("Direct routing (physical): device=%s preset=%s url=%s", device_name, preset, stream_url)
-            else:
-                _LOGGER.info("Direct routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
-            try:
-                meta = coordinator.get_station_meta(stream_url)
-                await coordinator.api.async_play_upnp_stream(
-                    stream_url,
-                    station_name=meta.get("name", ""),
-                    station_favicon=meta.get("favicon", ""),
+                # Physical button press: the speaker already selected and is playing
+                # the stored preset itself — nothing more to do.
+                _LOGGER.debug(
+                    "Direct routing (physical): device=%s preset=%s already playing natively", device_name, preset
                 )
+                return
+
+            _LOGGER.info("Direct routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
+            # Emulate a physical button press: this works on cold/standby speakers,
+            # whereas AVTransport only takes over when the UPnP renderer is already the
+            # active source (so it silently fails on idle/standby devices). The preset
+            # is already stored on the speaker via provisioning.
+            played_natively = False
+            try:
+                state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+                source = str((state or {}).get("source") or "").upper()
+                # POWER toggles power, so only send it when the device is asleep.
+                if source in {"STANDBY", ""}:
+                    await coordinator.api.async_power_on()
+                    await asyncio.sleep(1.5)
+                await coordinator.api.async_select_preset(preset)
+                played_natively = True
             except Exception as err:
-                _LOGGER.warning("Direct routing: AVTransport play failed for %s preset=%s: %s", device_name, preset, err)
+                _LOGGER.warning(
+                    "Direct routing: native preset select failed for %s preset=%s: %s", device_name, preset, err
+                )
+
+            # Fallback to AVTransport (covers stream URLs the speaker cannot resolve
+            # itself, e.g. .lan hosts on a custom DNS) if native playback didn't start.
+            if played_natively:
+                await asyncio.sleep(self.playback_verify_delay_seconds)
+            confirm = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+            confirm_source = str((confirm or {}).get("source") or "").upper()
+            if confirm_source not in {"UPNP", "AIRPLAY"}:
+                _LOGGER.info(
+                    "Direct routing: native select did not start playback for %s preset=%s (source=%s); trying AVTransport",
+                    device_name, preset, confirm_source or "-",
+                )
+                try:
+                    meta = coordinator.get_station_meta(stream_url)
+                    await coordinator.api.async_play_upnp_stream(
+                        stream_url,
+                        station_name=meta.get("name", ""),
+                        station_favicon=meta.get("favicon", ""),
+                    )
+                except Exception as err:
+                    _LOGGER.warning(
+                        "Direct routing: AVTransport fallback also failed for %s preset=%s: %s", device_name, preset, err
+                    )
+
+            await coordinator.async_request_refresh()
             return
 
         if not ma_player:
