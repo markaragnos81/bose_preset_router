@@ -638,29 +638,26 @@ class BosePresetRouterManager:
                 except Exception as err:
                     _LOGGER.warning("Failed to set volume for direct routing: %s", err)
 
-            # Two-step playback:
-            #  1) select the stored preset — sets the ContentItem + station metadata and
-            #     makes the UPnP renderer the active source (so AVTransport can take over),
-            #  2) push the stream via AVTransport SetAVTransportURI+Play — this is what
-            #     actually starts audio. Selecting alone only switches the source; it does
-            #     not begin streaming.
+            # Playback is done purely via UPnP AVTransport (SetAVTransportURI+Play), which
+            # is what actually starts streaming. Station metadata (title/art) is carried in
+            # the DIDL we send, and active_preset is derived from the now_playing location.
+            # We deliberately do NOT send the native PRESET key first: that kicks off the
+            # speaker's own preset machinery for a UPNP-source ContentItem, which on some
+            # units wedges the renderer (accepts commands with HTTP 200 but never streams).
+            # This mirrors the reference bridge, which plays with AVTransport only.
             if reason != "websocket":
-                # Service/dashboard trigger: emulate a button press first so it also works
-                # on cold/standby speakers. Physical presses (websocket) already selected
-                # the preset on the device itself, so we skip straight to AVTransport.
+                # Service/dashboard trigger: wake the speaker first if it is asleep.
+                # POWER toggles power, so only send it when actually in standby.
                 _LOGGER.info("Direct routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
                 try:
                     state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
                     source = str((state or {}).get("source") or "").upper()
-                    # POWER toggles power, so only send it when the device is asleep.
                     if source in {"STANDBY", ""}:
                         await coordinator.api.async_power_on()
                         await asyncio.sleep(1.5)
-                    await coordinator.api.async_select_preset(preset)
-                    await asyncio.sleep(0.5)
                 except Exception as err:
                     _LOGGER.warning(
-                        "Direct routing: preset select failed for %s preset=%s: %s", device_name, preset, err
+                        "Direct routing: power-on check failed for %s preset=%s: %s", device_name, preset, err
                     )
             else:
                 _LOGGER.debug("Direct routing (physical): device=%s preset=%s starting stream", device_name, preset)
