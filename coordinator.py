@@ -93,6 +93,14 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("AirPlay ended: refresh failed for %s: %s", self.device_name, err)
 
     def _resolve_icy_url(self, now_playing: dict[str, Any]) -> str:
+        # For an active AirPlay session, trust the stream URL we ourselves are
+        # pushing right now over any Bose-reported location/source. Live testing
+        # has shown Bose can temporarily keep echoing a stale UPNP ContentItem
+        # from an earlier preset/resume even while the new RAOP stream is already
+        # playing correctly.
+        if self.active_stream_url and self.airplay_player.is_playing:
+            return self.active_stream_url
+
         location = str(now_playing.get("location") or "").strip()
         if location:
             return location

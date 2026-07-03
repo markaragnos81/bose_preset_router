@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.11] - 2026-07-03
+
+### Fixed
+
+- Radio-Metadaten (Sendername, Titel, Cover) konnten nach einem AirPlay-Resume oder Preset-Wechsel an einer stale UPNP-ContentItem-Meldung von Bose haengenbleiben, obwohl der eigene RAOP-Stream bereits korrekt lief. `_resolve_icy_url()` bevorzugt jetzt bei verifiziert laufender AirPlay-Session immer die eigene `active_stream_url`, bevor Bose's gemeldete `location` ausgewertet wird.
+
 ## [0.7.10] - 2026-07-03
 
 ### Changed
