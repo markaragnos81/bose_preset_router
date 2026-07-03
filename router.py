@@ -645,14 +645,15 @@ class BosePresetRouterManager:
             # speaker's own preset machinery for a UPNP-source ContentItem, which on some
             # units wedges the renderer (accepts commands with HTTP 200 but never streams).
             # This mirrors the reference bridge, which plays with AVTransport only.
+            pre_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+            pre_source = str((pre_state or {}).get("source") or "").upper()
+
             if reason != "websocket":
                 # Service/dashboard trigger: wake the speaker first if it is asleep.
                 # POWER toggles power, so only send it when actually in standby.
                 _LOGGER.info("Direct routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
                 try:
-                    state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
-                    source = str((state or {}).get("source") or "").upper()
-                    if source in {"STANDBY", ""}:
+                    if pre_source in {"STANDBY", ""}:
                         await coordinator.api.async_power_on()
                         await asyncio.sleep(1.5)
                 except Exception as err:
@@ -672,6 +673,29 @@ class BosePresetRouterManager:
             except Exception as err:
                 _LOGGER.warning(
                     "Direct routing: AVTransport play failed for %s preset=%s: %s", device_name, preset, err
+                )
+                await coordinator.async_request_refresh()
+                return
+
+            # Diagnostics only (no recovery attempt — testing showed standby/power-cycle
+            # and preset-reselect do not free a wedged renderer, only a physical power
+            # cycle does). Log enough context to spot a pattern across occurrences.
+            await asyncio.sleep(self.playback_verify_delay_seconds)
+            post_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+            post_status = str((post_state or {}).get("source") or "")
+            playing = False
+            try:
+                np_raw = await coordinator.api._async_get_text("now_playing")
+                playing = "<playStatus>" in np_raw
+            except Exception:
+                pass
+            if not playing:
+                _LOGGER.warning(
+                    "Direct routing: renderer did not report playStatus after AVTransport "
+                    "device=%s preset=%s pre_source=%s post_source=%s url=%s "
+                    "(SOAP accepted but speaker never started streaming — known wedge state, "
+                    "requires physical power cycle to clear)",
+                    device_name, preset, pre_source or "-", post_status or "-", stream_url,
                 )
 
             await coordinator.async_request_refresh()
