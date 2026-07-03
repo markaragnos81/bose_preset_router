@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
+from .airplay import AirPlayDiscovery, AirPlayPlayer
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
 from .radio_browser import async_fetch_icy_meta, async_lookup_radio_logo, async_lookup_station
@@ -24,6 +25,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         *,
         subentry_id: str,
         device: dict[str, Any],
+        airplay_discovery: AirPlayDiscovery,
     ) -> None:
         self.entry = entry
         self.subentry_id = subentry_id
@@ -36,6 +38,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             host=device[CONF_BOSE_IP],
             device_name=device[CONF_NAME],
         )
+        self.airplay_player = AirPlayPlayer(hass, device[CONF_BOSE_IP], airplay_discovery)
 
         super().__init__(
             hass,
@@ -69,7 +72,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         merged["now_playing"] = now_playing
 
         location = str(now_playing.get("location") or "").strip()
-        if str(now_playing.get("source") or "").upper() == "UPNP" and location:
+        if str(now_playing.get("source") or "").upper() in {"UPNP", "AIRPLAY"} and location:
             if location not in self._station_meta:
                 await self._async_resolve_station_meta(location)
             icy = await async_fetch_icy_meta(self.hass, location)
@@ -96,7 +99,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         # ICY metadata fetch (fallback when WS is not connected or for initial load)
         now_playing = snapshot.get("now_playing", {})
-        if str(now_playing.get("source") or "").upper() == "UPNP":
+        if str(now_playing.get("source") or "").upper() in {"UPNP", "AIRPLAY"}:
             location = str(now_playing.get("location") or "").strip()
             if location:
                 icy = await async_fetch_icy_meta(self.hass, location)
@@ -123,7 +126,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         await self._async_provision_presets()
 
     async def async_stop(self) -> None:
-        pass
+        await self.airplay_player.stop()
 
     # ------------------------------------------------------------------
     # Station metadata & presets

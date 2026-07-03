@@ -11,12 +11,14 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
+from .airplay import AirPlayDiscovery
 from .coordinator import BoseSoundTouchCoordinator
 from .const import (
     ATTR_DEVICE,
     ATTR_MASTER,
     ATTR_MEMBERS,
     ATTR_PRESET,
+    DATA_AIRPLAY_DISCOVERY,
     DATA_COORDINATORS,
     DATA_MANAGER,
     DOMAIN,
@@ -297,12 +299,15 @@ def _async_cleanup_stale_devices(
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data = hass.data.setdefault(DOMAIN, {})
     manager = BosePresetRouterManager(hass, entry)
+    airplay_discovery = AirPlayDiscovery(hass, entry)
+    airplay_discovery.async_start()
     coordinators = {
         subentry_id: BoseSoundTouchCoordinator(
             hass,
             entry,
             subentry_id=subentry_id,
             device=subentry.data,
+            airplay_discovery=airplay_discovery,
         )
         for subentry_id, subentry in entry.subentries.items()
         if subentry.subentry_type == "device"
@@ -332,6 +337,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data[entry.entry_id] = {
         DATA_MANAGER: manager,
         DATA_COORDINATORS: coordinators,
+        DATA_AIRPLAY_DISCOVERY: airplay_discovery,
         DATA_LOADED_PLATFORMS: False,
     }
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
@@ -346,12 +352,14 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     manager: BosePresetRouterManager = entry_data[DATA_MANAGER]
     coordinators: dict[str, BoseSoundTouchCoordinator] = entry_data[DATA_COORDINATORS]
+    airplay_discovery: AirPlayDiscovery = entry_data[DATA_AIRPLAY_DISCOVERY]
     unload_ok = True
     if entry_data.get(DATA_LOADED_PLATFORMS):
         unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
 
     await asyncio.gather(
         manager.async_stop(),
+        airplay_discovery.async_stop(),
         *(coordinator.async_stop() for coordinator in coordinators.values()),
     )
     hass.data.get(DOMAIN, {}).pop(entry.entry_id, None)

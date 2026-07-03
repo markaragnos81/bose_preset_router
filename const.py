@@ -1,6 +1,7 @@
 DOMAIN = "bose_preset_router"
 DATA_MANAGER = "manager"
 DATA_COORDINATORS = "coordinators"
+DATA_AIRPLAY_DISCOVERY = "airplay_discovery"
 PLATFORMS = ["media_player", "select"]
 
 CONF_NOTIFY_ON_PRESS = "notify_on_press"
@@ -20,6 +21,7 @@ CONF_ROUTING_MODE = "routing_mode"
 ROUTING_MODE_NONE = "none"
 ROUTING_MODE_DIRECT = "direct"
 ROUTING_MODE_PLAYER = "player"
+ROUTING_MODE_AIRPLAY = "airplay"
 
 ATTR_DEVICE = "device"
 ATTR_PRESET = "preset"

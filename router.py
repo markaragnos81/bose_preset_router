@@ -35,6 +35,7 @@ from .const import (
     DEFAULT_STRICT_BOSE_CONFIRMATION,
     DEFAULT_TOLERANT_BOSE_CONFIRMATION,
     PRESET_IDS,
+    ROUTING_MODE_AIRPLAY,
     ROUTING_MODE_DIRECT,
     ROUTING_MODE_NONE,
     WS_PORT,
@@ -696,6 +697,73 @@ class BosePresetRouterManager:
                     "(SOAP accepted but speaker never started streaming — known wedge state, "
                     "requires physical power cycle to clear)",
                     device_name, preset, pre_source or "-", post_status or "-", stream_url,
+                )
+
+            await coordinator.async_request_refresh()
+            return
+
+        elif routing_mode == ROUTING_MODE_AIRPLAY:
+            coordinator = self._get_coordinator(device[CONF_BOSE_IP])
+            if coordinator is None:
+                _LOGGER.warning("No coordinator for AirPlay routing: device=%s", device_name)
+                return
+            stream_url = coordinator._resolve_preset_url(preset)
+            if not stream_url:
+                _LOGGER.warning("AirPlay routing: no URL configured for device=%s preset=%s", device_name, preset)
+                return
+            if target_volume is not None:
+                try:
+                    await coordinator.api.async_set_volume(int(target_volume))
+                except Exception as err:
+                    _LOGGER.warning("Failed to set volume for AirPlay routing: %s", err)
+
+            pre_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+            pre_source = str((pre_state or {}).get("source") or "").upper()
+
+            if reason != "websocket":
+                _LOGGER.info("AirPlay routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
+                try:
+                    if pre_source in {"STANDBY", ""}:
+                        await coordinator.api.async_power_on()
+                        await asyncio.sleep(1.5)
+                except Exception as err:
+                    _LOGGER.warning(
+                        "AirPlay routing: power-on check failed for %s preset=%s: %s", device_name, preset, err
+                    )
+            else:
+                _LOGGER.debug("AirPlay routing (physical): device=%s preset=%s starting stream", device_name, preset)
+
+            meta = coordinator.get_station_meta(stream_url)
+            try:
+                started = await coordinator.airplay_player.play(
+                    stream_url,
+                    title=meta.get("name", "") or (item_name or ""),
+                    artist="Bose Preset Router",
+                    album=meta.get("name", "") or "AirPlay",
+                )
+            except Exception as err:
+                _LOGGER.warning("AirPlay routing: play failed for %s preset=%s: %s", device_name, preset, err)
+                await coordinator.async_request_refresh()
+                return
+
+            if not started:
+                _LOGGER.warning(
+                    "AirPlay routing: could not start stream for %s preset=%s (no discovered target or connect failure)",
+                    device_name, preset,
+                )
+                await coordinator.async_request_refresh()
+                return
+
+            # Lightweight sanity check only — unlike the UPnP branch's wedge diagnostic,
+            # a missing AIRPLAY source here just means the RAOP handshake is still in
+            # progress or genuinely failed, not a known unrecoverable device state.
+            await asyncio.sleep(self.playback_verify_delay_seconds)
+            post_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+            post_source = str((post_state or {}).get("source") or "").upper()
+            if post_source != "AIRPLAY":
+                _LOGGER.info(
+                    "AirPlay routing: source is %s (not yet AIRPLAY) for device=%s preset=%s shortly after play start",
+                    post_source or "-", device_name, preset,
                 )
 
             await coordinator.async_request_refresh()

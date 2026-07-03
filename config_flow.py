@@ -52,6 +52,7 @@ SETUP_MODE_EXPERT = "expert"
 ROUTING_MODE_NONE = "none"
 ROUTING_MODE_DIRECT = "direct"
 ROUTING_MODE_PLAYER = "player"
+ROUTING_MODE_AIRPLAY = "airplay"
 CONF_USE_PRESET_DEFAULTS = "use_preset_defaults"
 
 ATTR_SETUP_METHOD = "setup_method"
@@ -193,16 +194,20 @@ def device_basic_schema() -> vol.Schema:
 def _routing_mode_options() -> list[selector.SelectOptionDict]:
     return [
         selector.SelectOptionDict(
-            value=ROUTING_MODE_NONE,
-            label="Only create the Bose player",
+            value=ROUTING_MODE_AIRPLAY,
+            label="Play presets via AirPlay (recommended)",
         ),
         selector.SelectOptionDict(
             value=ROUTING_MODE_DIRECT,
-            label="Play presets directly on Bose via UPNP (no Music Assistant needed)",
+            label="Play presets directly on Bose via UPNP (fallback)",
         ),
         selector.SelectOptionDict(
             value=ROUTING_MODE_PLAYER,
             label="Route presets to another player (Music Assistant)",
+        ),
+        selector.SelectOptionDict(
+            value=ROUTING_MODE_NONE,
+            label="Only create the Bose player",
         ),
     ]
 
@@ -210,7 +215,7 @@ def _routing_mode_options() -> list[selector.SelectOptionDict]:
 def routing_schema() -> vol.Schema:
     return vol.Schema(
         {
-            vol.Required(ATTR_ROUTING_MODE, default=ROUTING_MODE_NONE): selector.SelectSelector(
+            vol.Required(ATTR_ROUTING_MODE, default=ROUTING_MODE_AIRPLAY): selector.SelectSelector(
                 selector.SelectSelectorConfig(
                     options=_routing_mode_options(),
                     mode=selector.SelectSelectorMode.LIST,
@@ -313,8 +318,8 @@ def _ssdp_value(discovery_info: Any, *keys: str) -> str:
 
 def _routing_mode_from_data(data: dict) -> str:
     stored = str(data.get(CONF_ROUTING_MODE) or "").strip()
-    if stored == ROUTING_MODE_DIRECT:
-        return ROUTING_MODE_DIRECT
+    if stored in (ROUTING_MODE_DIRECT, ROUTING_MODE_AIRPLAY):
+        return stored
     return ROUTING_MODE_PLAYER if str(data.get(CONF_MA_PLAYER) or "").strip() else ROUTING_MODE_NONE
 
 
@@ -329,6 +334,9 @@ def _finalize_device_data(normalized_input: dict) -> dict:
     routing_mode = str(final_data.pop(ATTR_ROUTING_MODE, ROUTING_MODE_NONE) or ROUTING_MODE_NONE)
     if routing_mode == ROUTING_MODE_DIRECT:
         final_data[CONF_ROUTING_MODE] = ROUTING_MODE_DIRECT
+        final_data.pop(CONF_MA_PLAYER, None)
+    elif routing_mode == ROUTING_MODE_AIRPLAY:
+        final_data[CONF_ROUTING_MODE] = ROUTING_MODE_AIRPLAY
         final_data.pop(CONF_MA_PLAYER, None)
     elif routing_mode == ROUTING_MODE_PLAYER and str(final_data.get(CONF_MA_PLAYER) or "").strip():
         final_data.pop(CONF_ROUTING_MODE, None)
@@ -692,6 +700,9 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
         if routing_mode == ROUTING_MODE_PLAYER and routing_target:
             routing_status = "Preset-Weiterleitung an einen anderen Player"
             routing_target_text = routing_target
+        elif routing_mode == ROUTING_MODE_AIRPLAY:
+            routing_status = "Direkte Wiedergabe auf Bose via AirPlay"
+            routing_target_text = "Bose-Gerät direkt (AirPlay)"
         elif routing_mode == ROUTING_MODE_DIRECT:
             routing_status = "Direkte Wiedergabe auf Bose via UPNP"
             routing_target_text = "Bose-Gerät direkt"
@@ -705,7 +716,7 @@ class BosePresetRouterDeviceSubentryFlow(config_entries.ConfigSubentryFlow):
             preset_summary_text = _preset_summary(self._pending_user_input)
 
         notes: list[str] = []
-        if routing_mode not in (ROUTING_MODE_PLAYER, ROUTING_MODE_DIRECT):
+        if routing_mode not in (ROUTING_MODE_PLAYER, ROUTING_MODE_DIRECT, ROUTING_MODE_AIRPLAY):
             notes.append("Preset-Routing bleibt zunächst deaktiviert.")
         if use_defaults and not active_presets:
             notes.append("Globale Standard-URLs werden für alle Presets verwendet.")
