@@ -300,7 +300,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     domain_data = hass.data.setdefault(DOMAIN, {})
     manager = BosePresetRouterManager(hass, entry)
     airplay_discovery = AirPlayDiscovery(hass, entry)
-    airplay_discovery.async_start()
+    await airplay_discovery.async_start()
     coordinators = {
         subentry_id: BoseSoundTouchCoordinator(
             hass,

@@ -10,6 +10,14 @@ speakers (returns 0 results even with a protocol filter) — only a full network
 multicast scan reliably finds them. AirPlayDiscovery runs that scan periodically
 in the background and caches results by IP, so playback doesn't pay the ~6s scan
 cost on every preset trigger.
+
+The scan reuses Home Assistant's own shared zeroconf instance rather than
+opening a second one, but that only works if a ServiceBrowser for _raop._tcp is
+actively running against it — pyatv.scan(aiozc=...) purely reads from that
+instance's cache and does not browse on its own. AirPlayDiscovery keeps its own
+AsyncServiceBrowser alive for the integration's whole lifetime so the cache is
+genuinely and continuously populated, not just whatever another integration's
+browser happened to already pick up.
 """
 from __future__ import annotations
 
@@ -23,6 +31,7 @@ from pyatv.interface import AppleTV, BaseConfig, MediaMetadata
 from homeassistant.components import zeroconf as ha_zeroconf
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from zeroconf.asyncio import AsyncServiceBrowser
 
 from .const import DOMAIN
 
@@ -31,6 +40,7 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_SCAN_INTERVAL_SECONDS = 90.0
 DEFAULT_CACHE_MAX_AGE_SECONDS = 180.0
 DEFAULT_SCAN_TIMEOUT_SECONDS = 6
+RAOP_SERVICE_TYPE = "_raop._tcp.local."
 
 
 class AirPlayDiscovery:
@@ -46,9 +56,21 @@ class AirPlayDiscovery:
         self._cache: dict[str, tuple[BaseConfig, float]] = {}
         self._task: asyncio.Task | None = None
         self._stop_event = asyncio.Event()
+        self._aiozc = None
+        self._browser: AsyncServiceBrowser | None = None
 
-    def async_start(self) -> None:
+    async def async_start(self) -> None:
         self._stop_event.clear()
+        # pyatv.scan(aiozc=...) only reads from the shared zeroconf instance's
+        # cache — per pyatv's own docs, "a ServiceBrowser must be running for
+        # all the types being scanned for", or the cache never learns which
+        # devices exist. Without our own browser, results were incomplete and
+        # inconsistent (2 of 4 Bose speakers found, seemingly at random,
+        # depending on whether some other HA integration happened to already be
+        # watching _raop._tcp). Keep our own browser running for the discovery's
+        # whole lifetime so the cache is genuinely, continuously populated.
+        self._aiozc = await ha_zeroconf.async_get_async_instance(self.hass)
+        self._browser = AsyncServiceBrowser(self._aiozc.zeroconf, [RAOP_SERVICE_TYPE])
         self._task = self.entry.async_create_background_task(
             self.hass, self._scan_loop(), f"{DOMAIN}_airplay_discovery"
         )
@@ -59,6 +81,9 @@ class AirPlayDiscovery:
             self._task.cancel()
             await asyncio.gather(self._task, return_exceptions=True)
             self._task = None
+        if self._browser:
+            await self._browser.async_cancel()
+            self._browser = None
 
     async def _scan_loop(self) -> None:
         while not self._stop_event.is_set():
@@ -75,16 +100,11 @@ class AirPlayDiscovery:
 
     async def _async_scan_once(self) -> None:
         loop = asyncio.get_running_loop()
-        # Reuse HA's own shared zeroconf instance instead of letting pyatv open a
-        # second, independent one. Two concurrent zeroconf listeners on the same
-        # host can miss each other's multicast responses — pyatv.scan() found
-        # both Bose speakers reliably in isolated testing but returned zero
-        # results when run inside Home Assistant, which already owns the mDNS
-        # socket via its own zeroconf integration.
+        if self._aiozc is None:
+            self._aiozc = await ha_zeroconf.async_get_async_instance(self.hass)
         start = time.monotonic()
-        aiozc = await ha_zeroconf.async_get_async_instance(self.hass)
         results = await pyatv.scan(
-            loop, timeout=DEFAULT_SCAN_TIMEOUT_SECONDS, protocol={Protocol.RAOP}, aiozc=aiozc
+            loop, timeout=DEFAULT_SCAN_TIMEOUT_SECONDS, protocol={Protocol.RAOP}, aiozc=self._aiozc
         )
         elapsed = time.monotonic() - start
         _LOGGER.info(
