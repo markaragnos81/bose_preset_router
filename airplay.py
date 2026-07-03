@@ -155,12 +155,26 @@ class AirPlayPlayer:
         self._stream_task: asyncio.Task | None = None
 
     async def play(
-        self, url: str, *, title: str = "", artist: str = "", album: str = ""
+        self,
+        url: str,
+        *,
+        title: str = "",
+        artist: str = "",
+        album: str = "",
+        volume_percent: float | None = None,
     ) -> bool:
         """Stop any current stream, connect, and start streaming url via AirPlay.
 
         Returns True once the stream task was started (does not itself guarantee
         audible playback — the caller may optionally poll now_playing afterwards).
+
+        Each play() call connects a fresh pyatv AppleTV instance, which starts
+        with no "changed volume" of its own. Without volume_percent, pyatv's
+        RAOP stream_file() falls back to either a device-reported "initialVolume"
+        or its own hardcoded 33% default — either can be louder than whatever
+        volume was last set on the speaker (e.g. via Bose's own app or a previous
+        session), audibly resetting the volume on every replay. Passing the
+        speaker's current volume here makes pyatv preserve it instead of guessing.
         """
         await self.stop()
 
@@ -175,6 +189,14 @@ class AirPlayPlayer:
             _LOGGER.warning("AirPlay: connect failed for %s: %s", self.bose_ip, err)
             self._atv = None
             return False
+
+        if volume_percent is not None:
+            try:
+                await self._atv.audio.set_volume(volume_percent)
+            except Exception as err:
+                _LOGGER.debug(
+                    "AirPlay: could not pre-set volume for %s: %s", self.bose_ip, err
+                )
 
         metadata = MediaMetadata(
             title=title or "Stream",

@@ -717,6 +717,18 @@ class BosePresetRouterManager:
                 except Exception as err:
                     _LOGGER.warning("Failed to set volume for AirPlay routing: %s", err)
 
+            # Pass the speaker's actual current volume into the new AirPlay session so
+            # pyatv preserves it instead of defaulting to a device-reported
+            # "initialVolume" or its own ~33% fallback on every fresh connection —
+            # otherwise volume audibly resets on every preset/replay.
+            volume_percent: float | None = float(target_volume) if target_volume is not None else None
+            if volume_percent is None:
+                try:
+                    current_volume = await coordinator.api.async_get_volume()
+                    volume_percent = float(current_volume.get("actual", 0))
+                except Exception as err:
+                    _LOGGER.debug("AirPlay routing: could not read current volume for %s: %s", device_name, err)
+
             pre_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
             pre_source = str((pre_state or {}).get("source") or "").upper()
 
@@ -740,6 +752,7 @@ class BosePresetRouterManager:
                     title=meta.get("name", "") or (item_name or ""),
                     artist="Bose Preset Router",
                     album=meta.get("name", "") or "AirPlay",
+                    volume_percent=volume_percent,
                 )
             except Exception as err:
                 _LOGGER.warning("AirPlay routing: play failed for %s preset=%s: %s", device_name, preset, err)
