@@ -18,7 +18,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import CONF_MA_PLAYER, DATA_COORDINATORS
+from .const import CONF_MA_PLAYER, CONF_ROUTING_MODE, DATA_COORDINATORS, ROUTING_MODE_AIRPLAY
 from .coordinator import BoseSoundTouchCoordinator
 from .radio_browser import parse_icy_stream_title
 
@@ -393,8 +393,19 @@ class BoseSoundTouchMediaPlayer(
     @property
     def _current_preset(self) -> dict[str, Any] | None:
         now_playing = self._data.get("now_playing", {})
-        current_location = str(now_playing.get("location") or "")
         current_source = str(now_playing.get("source") or "")
+
+        # AirPlay's ContentItem carries no location/item_name to reverse-match
+        # against stored presets (unlike UPnP's provisioned ContentItem) — router.py
+        # records which preset it started playing on coordinator.active_preset, so
+        # use that directly instead of trying to infer it from now_playing.
+        if current_source.upper() == "AIRPLAY" and self.coordinator.active_preset is not None:
+            for preset in self._presets:
+                if preset.get("id") == self.coordinator.active_preset:
+                    return preset
+            return None
+
+        current_location = str(now_playing.get("location") or "")
         current_item_name = str(now_playing.get("item_name") or "")
         for preset in self._presets:
             preset_location = str(preset.get("location") or "")
@@ -632,11 +643,33 @@ class BoseSoundTouchMediaPlayer(
             f"Unknown browse request: type={media_content_type} id={media_content_id}"
         )
 
+    @property
+    def _is_airplay_mode(self) -> bool:
+        return str(self.coordinator.device.get(CONF_ROUTING_MODE) or "") == ROUTING_MODE_AIRPLAY
+
+    async def _async_stop_airplay_if_active(self) -> None:
+        """Actually end the RAOP session and forget the resume state.
+
+        Bose's own stop/standby controls do not close an active AirPlay session
+        (verified live: the speaker stays on source=AIRPLAY after a plain
+        userPlayControl STOP) — only tearing down our own pyatv connection does.
+        Also clears the persisted resume-on-restart preset, since this is an
+        explicit user stop, not an interruption to recover from.
+        """
+        if not self._is_airplay_mode:
+            return
+        await self.coordinator.airplay_player.stop()
+        try:
+            await self.coordinator.airplay_resume_store.async_clear(self.coordinator.bose_ip)
+        except Exception:
+            pass
+
     async def async_turn_on(self) -> None:
         await self.coordinator.api.async_power_on()
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self) -> None:
+        await self._async_stop_airplay_if_active()
         await self.coordinator.api.async_standby()
         await self.coordinator.async_request_refresh()
 
@@ -645,10 +678,12 @@ class BoseSoundTouchMediaPlayer(
         await self.coordinator.async_request_refresh()
 
     async def async_media_pause(self) -> None:
+        await self._async_stop_airplay_if_active()
         await self.coordinator.api.async_pause()
         await self.coordinator.async_request_refresh()
 
     async def async_media_stop(self) -> None:
+        await self._async_stop_airplay_if_active()
         await self.coordinator.api.async_stop()
         await self.coordinator.async_request_refresh()
 

@@ -11,7 +11,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.typing import ConfigType
 
-from .airplay import AirPlayDiscovery
+from .airplay import AirPlayDiscovery, AirPlayResumeStore
 from .coordinator import BoseSoundTouchCoordinator
 from .const import (
     ATTR_DEVICE,
@@ -301,6 +301,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     manager = BosePresetRouterManager(hass, entry)
     airplay_discovery = AirPlayDiscovery(hass, entry)
     await airplay_discovery.async_start()
+    airplay_resume_store = AirPlayResumeStore(hass)
+    await airplay_resume_store.async_load()
     coordinators = {
         subentry_id: BoseSoundTouchCoordinator(
             hass,
@@ -308,6 +310,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             subentry_id=subentry_id,
             device=subentry.data,
             airplay_discovery=airplay_discovery,
+            airplay_resume_store=airplay_resume_store,
         )
         for subentry_id, subentry in entry.subentries.items()
         if subentry.subentry_type == "device"
@@ -340,6 +343,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         DATA_AIRPLAY_DISCOVERY: airplay_discovery,
         DATA_LOADED_PLATFORMS: False,
     }
+
+    # Fire-and-forget: don't block entry setup on AirPlay discovery/reconnects.
+    entry.async_create_background_task(
+        hass, manager.async_resume_airplay_devices(), f"{DOMAIN}_airplay_resume"
+    )
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     domain_data[entry.entry_id][DATA_LOADED_PLATFORMS] = True
     return True

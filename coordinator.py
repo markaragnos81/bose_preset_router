@@ -9,7 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .airplay import AirPlayDiscovery, AirPlayPlayer
+from .airplay import AirPlayDiscovery, AirPlayPlayer, AirPlayResumeStore
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
 from .radio_browser import async_fetch_icy_meta, async_lookup_radio_logo, async_lookup_station
@@ -26,6 +26,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         subentry_id: str,
         device: dict[str, Any],
         airplay_discovery: AirPlayDiscovery,
+        airplay_resume_store: AirPlayResumeStore,
     ) -> None:
         self.entry = entry
         self.subentry_id = subentry_id
@@ -39,6 +40,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             device_name=device[CONF_NAME],
         )
         self.airplay_player = AirPlayPlayer(hass, device[CONF_BOSE_IP], airplay_discovery)
+        self.airplay_resume_store = airplay_resume_store
 
         super().__init__(
             hass,

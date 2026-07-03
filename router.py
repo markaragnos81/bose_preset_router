@@ -507,6 +507,28 @@ class BosePresetRouterManager:
             task.cancel()
         if self._tasks:
             await asyncio.gather(*self._tasks, return_exceptions=True)
+
+    async def async_resume_airplay_devices(self) -> None:
+        """Replay whatever was last playing via AirPlay on each device, if anything.
+
+        Called once at startup after coordinators/websocket loops are live. Only
+        applies to AIRPLAY-mode devices — UPnP-mode speakers keep playing across a
+        restart on their own and don't need this.
+        """
+        for device in self.devices:
+            if str(device.get(CONF_ROUTING_MODE) or "") != ROUTING_MODE_AIRPLAY:
+                continue
+            bose_ip = device[CONF_BOSE_IP]
+            coordinator = self._get_coordinator(bose_ip)
+            if coordinator is None:
+                continue
+            preset = coordinator.airplay_resume_store.get(bose_ip)
+            if preset is None:
+                continue
+            _LOGGER.info(
+                "Resuming AirPlay preset %s for device=%s after restart", preset, device[CONF_NAME]
+            )
+            await self.async_handle_preset(device[CONF_NAME], preset, reason="resume", bose_ip=bose_ip)
         self._tasks.clear()
 
     async def _device_loop(self, device: dict[str, Any]) -> None:
@@ -733,7 +755,9 @@ class BosePresetRouterManager:
             pre_source = str((pre_state or {}).get("source") or "").upper()
 
             if reason != "websocket":
-                _LOGGER.info("AirPlay routing (service): device=%s preset=%s url=%s", device_name, preset, stream_url)
+                _LOGGER.info(
+                    "AirPlay routing (%s): device=%s preset=%s url=%s", reason, device_name, preset, stream_url
+                )
                 try:
                     if pre_source in {"STANDBY", ""}:
                         await coordinator.api.async_power_on()
@@ -766,6 +790,23 @@ class BosePresetRouterManager:
                 )
                 await coordinator.async_request_refresh()
                 return
+
+            # AirPlay's ContentItem carries no location/item_name for media_player.py
+            # to reverse-match against stored presets (unlike UPnP), so record which
+            # preset we just started directly — router.py is the one source of truth
+            # for what it told the speaker to play.
+            coordinator.active_preset = preset
+            if coordinator.data is not None:
+                coordinator.async_set_updated_data(coordinator.data)
+
+            # Remember this so a future HA restart can resume playback: AirPlay is a
+            # live push connection (pyatv decodes and streams audio itself), unlike
+            # UPnP where the speaker fetches the URL independently and keeps playing
+            # across a restart. Without this, the speaker just goes silent on restart.
+            try:
+                await coordinator.airplay_resume_store.async_set(device[CONF_BOSE_IP], preset)
+            except Exception as err:
+                _LOGGER.debug("AirPlay routing: could not persist resume state for %s: %s", device_name, err)
 
             # Lightweight sanity check only — unlike the UPnP branch's wedge diagnostic,
             # a missing AIRPLAY source here just means the RAOP handshake is still in

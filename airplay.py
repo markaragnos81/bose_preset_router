@@ -31,6 +31,7 @@ from pyatv.interface import AppleTV, BaseConfig, MediaMetadata
 from homeassistant.components import zeroconf as ha_zeroconf
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.storage import Store
 from zeroconf.asyncio import AsyncServiceBrowser
 
 from .const import DOMAIN
@@ -43,6 +44,8 @@ DEFAULT_SCAN_TIMEOUT_SECONDS = 6
 FALLBACK_RESCAN_ATTEMPTS = 3
 FALLBACK_RESCAN_DELAY_SECONDS = 2.0
 RAOP_SERVICE_TYPE = "_raop._tcp.local."
+RESUME_STORAGE_VERSION = 1
+RESUME_STORAGE_KEY = f"{DOMAIN}_airplay_resume"
 
 
 def _noop_service_state_change(zeroconf, service_type, name, state_change) -> None:
@@ -245,3 +248,35 @@ class AirPlayPlayer:
             except Exception:
                 pass
             self._atv = None
+
+
+class AirPlayResumeStore:
+    """Persists which preset was last playing via AirPlay per device, across restarts.
+
+    UPnP-mode speakers don't need this — Bose fetches the stream URL itself and
+    keeps playing independently of Home Assistant. AirPlay is different: pyatv
+    actively decodes and pushes audio over a live connection, so when HA restarts
+    that connection (and the speaker's audio) dies with it. This store lets the
+    integration remember "device X was playing preset N" so it can replay it once
+    HA and AirPlay discovery are back up, instead of the speaker just staying silent.
+    """
+
+    def __init__(self, hass: HomeAssistant) -> None:
+        self._store = Store(hass, RESUME_STORAGE_VERSION, RESUME_STORAGE_KEY)
+        self._data: dict[str, int] = {}
+
+    async def async_load(self) -> None:
+        loaded = await self._store.async_load()
+        self._data = dict(loaded) if loaded else {}
+
+    def get(self, bose_ip: str) -> int | None:
+        return self._data.get(bose_ip)
+
+    async def async_set(self, bose_ip: str, preset: int) -> None:
+        self._data[bose_ip] = preset
+        await self._store.async_save(self._data)
+
+    async def async_clear(self, bose_ip: str) -> None:
+        if bose_ip in self._data:
+            del self._data[bose_ip]
+            await self._store.async_save(self._data)
