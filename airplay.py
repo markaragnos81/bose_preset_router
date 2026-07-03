@@ -43,6 +43,16 @@ DEFAULT_SCAN_TIMEOUT_SECONDS = 6
 RAOP_SERVICE_TYPE = "_raop._tcp.local."
 
 
+def _noop_service_state_change(zeroconf, service_type, name, state_change) -> None:
+    """No-op handler for AsyncServiceBrowser.
+
+    We don't need per-event callbacks — the browser's only job is to keep
+    zeroconf's cache populated with PTR/records for _raop._tcp so that
+    pyatv.scan(aiozc=...) (which only reads from that cache) finds our
+    devices. AsyncServiceBrowser requires at least one handler to construct.
+    """
+
+
 class AirPlayDiscovery:
     """Shared, periodic RAOP discovery cache for one config entry.
 
@@ -70,7 +80,9 @@ class AirPlayDiscovery:
         # watching _raop._tcp). Keep our own browser running for the discovery's
         # whole lifetime so the cache is genuinely, continuously populated.
         self._aiozc = await ha_zeroconf.async_get_async_instance(self.hass)
-        self._browser = AsyncServiceBrowser(self._aiozc.zeroconf, [RAOP_SERVICE_TYPE])
+        self._browser = AsyncServiceBrowser(
+            self._aiozc.zeroconf, [RAOP_SERVICE_TYPE], handlers=[_noop_service_state_change]
+        )
         self._task = self.entry.async_create_background_task(
             self.hass, self._scan_loop(), f"{DOMAIN}_airplay_discovery"
         )
