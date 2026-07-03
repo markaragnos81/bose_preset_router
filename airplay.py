@@ -65,7 +65,7 @@ class AirPlayDiscovery:
             try:
                 await self._async_scan_once()
             except Exception as err:
-                _LOGGER.warning("AirPlay discovery scan failed: %s", err)
+                _LOGGER.warning("AirPlay discovery scan failed: %s", err, exc_info=True)
             try:
                 await asyncio.wait_for(
                     self._stop_event.wait(), timeout=DEFAULT_SCAN_INTERVAL_SECONDS
@@ -81,9 +81,15 @@ class AirPlayDiscovery:
         # both Bose speakers reliably in isolated testing but returned zero
         # results when run inside Home Assistant, which already owns the mDNS
         # socket via its own zeroconf integration.
+        start = time.monotonic()
         aiozc = await ha_zeroconf.async_get_async_instance(self.hass)
         results = await pyatv.scan(
             loop, timeout=DEFAULT_SCAN_TIMEOUT_SECONDS, protocol={Protocol.RAOP}, aiozc=aiozc
+        )
+        elapsed = time.monotonic() - start
+        _LOGGER.info(
+            "AirPlay scan finished in %.2fs, found %d device(s): %s",
+            elapsed, len(results), [str(c.address) for c in results],
         )
         now = time.monotonic()
         for cfg in results:
@@ -99,7 +105,9 @@ class AirPlayDiscovery:
         try:
             await self._async_scan_once()
         except Exception as err:
-            _LOGGER.warning("AirPlay discovery fallback scan failed for %s: %s", bose_ip, err)
+            _LOGGER.warning(
+                "AirPlay discovery fallback scan failed for %s: %s", bose_ip, err, exc_info=True
+            )
         cached = self._cache.get(bose_ip)
         return cached[0] if cached else None
 
