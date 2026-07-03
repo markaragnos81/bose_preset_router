@@ -20,6 +20,7 @@ import time
 import pyatv
 from pyatv.const import Protocol
 from pyatv.interface import AppleTV, BaseConfig, MediaMetadata
+from homeassistant.components import zeroconf as ha_zeroconf
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
@@ -74,8 +75,15 @@ class AirPlayDiscovery:
 
     async def _async_scan_once(self) -> None:
         loop = asyncio.get_running_loop()
+        # Reuse HA's own shared zeroconf instance instead of letting pyatv open a
+        # second, independent one. Two concurrent zeroconf listeners on the same
+        # host can miss each other's multicast responses — pyatv.scan() found
+        # both Bose speakers reliably in isolated testing but returned zero
+        # results when run inside Home Assistant, which already owns the mDNS
+        # socket via its own zeroconf integration.
+        aiozc = await ha_zeroconf.async_get_async_instance(self.hass)
         results = await pyatv.scan(
-            loop, timeout=DEFAULT_SCAN_TIMEOUT_SECONDS, protocol={Protocol.RAOP}
+            loop, timeout=DEFAULT_SCAN_TIMEOUT_SECONDS, protocol={Protocol.RAOP}, aiozc=aiozc
         )
         now = time.monotonic()
         for cfg in results:
