@@ -770,6 +770,7 @@ class BosePresetRouterManager:
                 _LOGGER.debug("AirPlay routing (physical): device=%s preset=%s starting stream", device_name, preset)
 
             meta = coordinator.get_station_meta(stream_url)
+            started = False
             try:
                 started = await coordinator.airplay_player.play(
                     stream_url,
@@ -780,44 +781,63 @@ class BosePresetRouterManager:
                 )
             except Exception as err:
                 _LOGGER.warning("AirPlay routing: play failed for %s preset=%s: %s", device_name, preset, err)
+
+            if started:
+                # AirPlay's ContentItem carries no location/item_name for media_player.py
+                # to reverse-match against stored presets (unlike UPnP), so record which
+                # preset we just started directly — router.py is the one source of truth
+                # for what it told the speaker to play.
+                coordinator.active_preset = preset
+                if coordinator.data is not None:
+                    coordinator.async_set_updated_data(coordinator.data)
+
+                # Remember this so a future HA restart can resume playback: AirPlay is a
+                # live push connection (pyatv decodes and streams audio itself), unlike
+                # UPnP where the speaker fetches the URL independently and keeps playing
+                # across a restart. Without this, the speaker just goes silent on restart.
+                try:
+                    await coordinator.airplay_resume_store.async_set(device[CONF_BOSE_IP], preset)
+                except Exception as err:
+                    _LOGGER.debug(
+                        "AirPlay routing: could not persist resume state for %s: %s", device_name, err
+                    )
+
+                # Lightweight sanity check only — unlike the UPnP branch's wedge diagnostic,
+                # a missing AIRPLAY source here just means the RAOP handshake is still in
+                # progress or genuinely failed, not a known unrecoverable device state.
+                await asyncio.sleep(self.playback_verify_delay_seconds)
+                post_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
+                post_source = str((post_state or {}).get("source") or "").upper()
+                if post_source != "AIRPLAY":
+                    _LOGGER.info(
+                        "AirPlay routing: source is %s (not yet AIRPLAY) for device=%s preset=%s shortly after play start",
+                        post_source or "-", device_name, preset,
+                    )
                 await coordinator.async_request_refresh()
                 return
 
-            if not started:
-                _LOGGER.warning(
-                    "AirPlay routing: could not start stream for %s preset=%s (no discovered target or connect failure)",
-                    device_name, preset,
-                )
-                await coordinator.async_request_refresh()
-                return
-
-            # AirPlay's ContentItem carries no location/item_name for media_player.py
-            # to reverse-match against stored presets (unlike UPnP), so record which
-            # preset we just started directly — router.py is the one source of truth
-            # for what it told the speaker to play.
-            coordinator.active_preset = preset
-            if coordinator.data is not None:
-                coordinator.async_set_updated_data(coordinator.data)
-
-            # Remember this so a future HA restart can resume playback: AirPlay is a
-            # live push connection (pyatv decodes and streams audio itself), unlike
-            # UPnP where the speaker fetches the URL independently and keeps playing
-            # across a restart. Without this, the speaker just goes silent on restart.
+            # AirPlay discovery/connect failed (e.g. the speaker briefly vanished from
+            # mDNS during Wi-Fi roaming). Without a fallback, a physical button press
+            # already made Bose natively select the preset's ContentItem (presets are
+            # always stored as UPNP source, regardless of routing mode) — leaving the
+            # speaker showing the preset with no audio, since native selection alone
+            # never starts playback. Fall back to AVTransport, which only needs the
+            # speaker's IP (no mDNS), so a network hiccup for AirPlay doesn't mean silence.
+            _LOGGER.warning(
+                "AirPlay routing: could not start stream for %s preset=%s (no discovered target or connect "
+                "failure); falling back to UPnP AVTransport",
+                device_name, preset,
+            )
             try:
-                await coordinator.airplay_resume_store.async_set(device[CONF_BOSE_IP], preset)
+                await coordinator.api.async_play_upnp_stream(
+                    stream_url,
+                    station_name=meta.get("name", ""),
+                    station_favicon=meta.get("favicon", ""),
+                )
             except Exception as err:
-                _LOGGER.debug("AirPlay routing: could not persist resume state for %s: %s", device_name, err)
-
-            # Lightweight sanity check only — unlike the UPnP branch's wedge diagnostic,
-            # a missing AIRPLAY source here just means the RAOP handshake is still in
-            # progress or genuinely failed, not a known unrecoverable device state.
-            await asyncio.sleep(self.playback_verify_delay_seconds)
-            post_state = await self._async_fetch_bose_now_playing(device[CONF_BOSE_IP])
-            post_source = str((post_state or {}).get("source") or "").upper()
-            if post_source != "AIRPLAY":
-                _LOGGER.info(
-                    "AirPlay routing: source is %s (not yet AIRPLAY) for device=%s preset=%s shortly after play start",
-                    post_source or "-", device_name, preset,
+                _LOGGER.warning(
+                    "AirPlay routing: UPnP AVTransport fallback also failed for %s preset=%s: %s",
+                    device_name, preset, err,
                 )
 
             await coordinator.async_request_refresh()
