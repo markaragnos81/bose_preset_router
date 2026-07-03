@@ -37,9 +37,11 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
-DEFAULT_SCAN_INTERVAL_SECONDS = 90.0
-DEFAULT_CACHE_MAX_AGE_SECONDS = 180.0
+DEFAULT_SCAN_INTERVAL_SECONDS = 20.0
+DEFAULT_CACHE_MAX_AGE_SECONDS = 45.0
 DEFAULT_SCAN_TIMEOUT_SECONDS = 6
+FALLBACK_RESCAN_ATTEMPTS = 3
+FALLBACK_RESCAN_DELAY_SECONDS = 2.0
 RAOP_SERVICE_TYPE = "_raop._tcp.local."
 
 
@@ -130,18 +132,33 @@ class AirPlayDiscovery:
     async def async_get_config(
         self, bose_ip: str, *, max_age_seconds: float = DEFAULT_CACHE_MAX_AGE_SECONDS
     ) -> BaseConfig | None:
-        """Return a cached RAOP config for bose_ip, rescanning once if missing/stale."""
+        """Return a cached RAOP config for bose_ip, rescanning if missing/stale.
+
+        Retries a few times with a short delay: mDNS PTR records for a device can
+        briefly vanish from the cache around a Wi-Fi roaming event (moving between
+        mesh APs) even though the speaker itself is fine — a short retry window
+        rides out that gap instead of failing the whole preset trigger on the
+        first empty scan.
+        """
         cached = self._cache.get(bose_ip)
         if cached and (time.monotonic() - cached[1]) < max_age_seconds:
             return cached[0]
-        try:
-            await self._async_scan_once()
-        except Exception as err:
-            _LOGGER.warning(
-                "AirPlay discovery fallback scan failed for %s: %s", bose_ip, err, exc_info=True
-            )
-        cached = self._cache.get(bose_ip)
-        return cached[0] if cached else None
+
+        for attempt in range(1, FALLBACK_RESCAN_ATTEMPTS + 1):
+            try:
+                await self._async_scan_once()
+            except Exception as err:
+                _LOGGER.warning(
+                    "AirPlay discovery fallback scan failed for %s (attempt %d/%d): %s",
+                    bose_ip, attempt, FALLBACK_RESCAN_ATTEMPTS, err, exc_info=True,
+                )
+            cached = self._cache.get(bose_ip)
+            if cached:
+                return cached[0]
+            if attempt < FALLBACK_RESCAN_ATTEMPTS:
+                await asyncio.sleep(FALLBACK_RESCAN_DELAY_SECONDS)
+
+        return None
 
 
 class AirPlayPlayer:
