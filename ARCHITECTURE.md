@@ -87,8 +87,12 @@ it took real live-testing (not assumption) to land on.
 - **`coordinator.py`** — `BoseSoundTouchCoordinator`: one per device. Holds
   `active_preset`, `active_stream_url` (AirPlay's own record of what it's
   streaming, since AirPlay's ContentItem has no `location` to key ICY
-  lookups off of), `airplay_player`. Cross-checks `airplay_player.is_playing`
-  on every poll and self-corrects if the stream actually died.
+  lookups off of), `airplay_player`, and a long-lived
+  `StreamMetadataTracker`. Cross-checks `airplay_player.is_playing` on every
+  poll and self-corrects if the stream actually died. For UPNP/AirPlay radio,
+  the coordinator now maintains structured `stream_meta` state (station name,
+  stream title, parsed artist/title, track image) instead of treating ICY as
+  a one-shot side lookup.
 - **`router.py`** — `BosePresetRouterManager.async_handle_preset()`: the
   central dispatch for both physical button presses (via the WS listener,
   `reason="websocket"`) and service/dashboard calls. The `ROUTING_MODE_AIRPLAY`
@@ -98,10 +102,16 @@ it took real live-testing (not assumption) to land on.
 - **`media_player.py`** — `_current_preset` trusts `coordinator.active_preset`
   only when `airplay_player.is_playing` confirms it; falls through to the
   pre-existing UPnP location/item_name matching otherwise (covers both
-  UPnP-mode devices and the AirPlay-fallback-to-UPnP case). `_station_name`
-  checks `now_playing.track` (the one field Bose reliably echoes for
-  AirPlay) and falls back to `coordinator.active_stream_url` for station
-  metadata lookups when `location` is empty.
+  UPnP-mode devices and the AirPlay-fallback-to-UPnP case). Metadata now
+  prefers `stream_meta` over raw Bose `now_playing`: station name, parsed
+  track artist/title, and best-effort track art come from the stream tracker,
+  with Bose/target-player attributes kept only as fallback layers.
+- **`stream_metadata.py`** â€” `StreamMetadataTracker`: runs per active radio
+  stream, periodically refreshes ICY metadata directly from the stream URL,
+  enriches parsed `Artist - Title` entries with best-effort cover art, and
+  classifies StreamTitle values as real track data vs. station branding.
+  Exposes debug-friendly reasons (e.g. `matches_station_branding`,
+  `contains_url_or_domain`) so misbehaving stations can be diagnosed live.
 - **`config_flow.py`** — AirPlay is the first/default routing option, labeled
   "recommended." No changes needed to the step-branching logic (`async_step_routing`
   only special-cases `player` mode; AirPlay falls into the same branch as
@@ -126,7 +136,25 @@ When discovery still misses, the `direct`/UPnP fallback (v0.7.8) keeps the
 speaker functional. Observed live fix: power-cycling the speaker, or
 toggling AirPlay in the Bose/SoundTouch app, kicks it back onto mDNS.
 
-## Known limitation: no live per-song metadata updates via AirPlay
+## Metadata architecture: Bose state vs. stream-derived state
+
+For internet radio, Bose's own `now_playing` is not rich enough to be the
+only metadata source even when playback itself is correct. The integration
+therefore now treats stream metadata as a separate pipeline:
+
+- Bose / `now_playing` still provides transport/source state.
+- `StreamMetadataTracker` polls the stream URL itself every 15s for live ICY
+  metadata, independent of whether playback arrived via UPNP or AirPlay.
+- Parsed `Artist - Title` is accepted only when it does **not** look like
+  station branding (`RADIO BOB - Rock Hits`, `Listen Live`, URL/domain
+  strings, etc.).
+- Station identity (name/logo) remains URL-based and cached.
+- Track cover art is best-effort enrichment only; if no confident lookup is
+  found, the entity falls back to the station logo/favicon instead of
+  showing a wrong album cover.
+
+This is intentionally closer to how Music Assistant thinks about radio:
+playback state and metadata state are related, but not the same subsystem.
 
 `pyatv`'s `stream_file(url, metadata=...)` sets metadata once at stream
 start; it does not update per song change. Richer metadata comes from the
@@ -135,6 +163,12 @@ against the stream URL directly — independent of the playback path, and
 already fixed in v0.7.9 to actually fire for AirPlay (previously it silently
 never fired because the fetch condition required a `location` field AirPlay
 never populates).
+
+This remains a limitation on the Bose display itself: HA entity metadata is
+now richer because it comes from the separate stream tracker, but the Bose
+front-panel / native AirPlay session metadata still does not refresh per song
+without restarting the stream (audible glitch), which is deliberately not
+implemented.
 
 ## Verification discipline (established practice in this project)
 
@@ -174,6 +208,10 @@ project.
   artist placeholder that caused display flicker. Live-verified against
   `.139`: AirPlay start correctly reports `active_preset`/`media_title`, and
   `media_stop` correctly clears `active_preset` back to `null` immediately.
+- **Unreleased**: Radio metadata moved from ad-hoc ICY fetches to a dedicated
+  `StreamMetadataTracker` with structured `stream_meta` state, best-effort
+  track-art enrichment, and explicit StreamTitle classification/debug reasons
+  to separate real songs from station branding.
 
 ## Open / possible future work
 

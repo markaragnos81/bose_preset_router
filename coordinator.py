@@ -12,7 +12,8 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .airplay import AirPlayDiscovery, AirPlayPlayer, AirPlayResumeStore
 from .api import BoseSoundTouchApi
 from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
-from .radio_browser import async_fetch_icy_meta, async_lookup_radio_logo, async_lookup_station
+from .radio_browser import async_lookup_radio_logo, async_lookup_station
+from .stream_metadata import StreamMetadataTracker
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -34,7 +35,6 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.active_preset: int | None = None
         self.active_stream_url: str | None = None
         self._station_meta: dict[str, dict[str, str]] = {}
-        self._last_icy_location: str = ""
         self.api = BoseSoundTouchApi(
             hass,
             host=device[CONF_BOSE_IP],
@@ -43,6 +43,11 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.airplay_player = AirPlayPlayer(hass, device[CONF_BOSE_IP], airplay_discovery)
         self.airplay_player.set_on_ended(self._on_airplay_ended)
         self.airplay_resume_store = airplay_resume_store
+        self.stream_metadata_tracker = StreamMetadataTracker(
+            hass,
+            station_meta_resolver=self._async_resolve_station_meta,
+            update_callback=self._async_handle_stream_meta_update,
+        )
 
         super().__init__(
             hass,
@@ -103,16 +108,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             return
         merged = dict(self.data)
         merged["now_playing"] = now_playing
-
-        source = str(now_playing.get("source") or "").upper()
-        location = self._resolve_icy_url(now_playing)
-        if source in {"UPNP", "AIRPLAY"} and location:
-            if location not in self._station_meta:
-                await self._async_resolve_station_meta(location)
-            icy = await async_fetch_icy_meta(self.hass, location)
-            merged["icy_meta"] = icy
-        else:
-            merged["icy_meta"] = {}
+        await self._async_sync_stream_metadata(merged, now_playing)
 
         self.async_set_updated_data(merged)
 
@@ -131,18 +127,12 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         snapshot["device_name"] = self.device_name
         snapshot["bose_ip"] = self.bose_ip
 
-        # ICY metadata fetch (fallback when WS is not connected or for initial load)
         now_playing = snapshot.get("now_playing", {})
-        source = str(now_playing.get("source") or "").upper()
-        location = self._resolve_icy_url(now_playing)
-        if source in {"UPNP", "AIRPLAY"} and location:
-            icy = await async_fetch_icy_meta(self.hass, location)
-            snapshot["icy_meta"] = icy
-        else:
-            snapshot["icy_meta"] = {}
+        await self._async_sync_stream_metadata(snapshot, now_playing)
 
         # Cross-check: if we believe AirPlay is active but our own stream task
         # has actually died, don't keep reporting a preset that isn't playing.
+        source = str(now_playing.get("source") or "").upper()
         if source == "AIRPLAY" and self.active_preset is not None and not self.airplay_player.is_playing:
             self.active_preset = None
             self.active_stream_url = None
@@ -164,6 +154,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         await self._async_provision_presets()
 
     async def async_stop(self) -> None:
+        await self.stream_metadata_tracker.async_clear()
         await self.airplay_player.stop()
 
     # ------------------------------------------------------------------
@@ -194,6 +185,42 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         self._station_meta[url] = meta
         return meta
+
+    async def _async_sync_stream_metadata(
+        self,
+        payload: dict[str, Any],
+        now_playing: dict[str, Any],
+    ) -> None:
+        source = str(now_playing.get("source") or "").upper()
+        location = self._resolve_icy_url(now_playing)
+        if source in {"UPNP", "AIRPLAY"} and location:
+            stream_meta = await self.stream_metadata_tracker.async_set_stream(location)
+            payload["stream_meta"] = stream_meta
+            payload["icy_meta"] = {
+                "stream_title": str(stream_meta.get("stream_title") or ""),
+                "icy_name": str(stream_meta.get("icy_name") or ""),
+            }
+            return
+
+        await self.stream_metadata_tracker.async_clear()
+        payload["stream_meta"] = {}
+        payload["icy_meta"] = {}
+
+    async def _async_handle_stream_meta_update(self, stream_meta: dict[str, Any]) -> None:
+        if self.data is None:
+            return
+        now_playing = self.data.get("now_playing", {})
+        current_location = self._resolve_icy_url(now_playing)
+        if current_location and current_location != str(stream_meta.get("stream_url") or ""):
+            return
+
+        merged = dict(self.data)
+        merged["stream_meta"] = stream_meta
+        merged["icy_meta"] = {
+            "stream_title": str(stream_meta.get("stream_title") or ""),
+            "icy_name": str(stream_meta.get("icy_name") or ""),
+        }
+        self.async_set_updated_data(merged)
 
     def _resolve_preset_url(self, preset_id: int) -> str:
         url = str(self.device.get(preset_url_key(preset_id)) or "").strip()

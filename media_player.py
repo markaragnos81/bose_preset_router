@@ -119,13 +119,12 @@ class BoseSoundTouchMediaPlayer(
     @property
     def media_title(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
+        stream_meta = self._stream_meta
 
-        # Real current song from ICY (e.g. "Black Dog" from "Led Zeppelin - Black Dog")
-        _, song_title = self._real_song
-        if song_title:
-            return song_title
+        track_title = str(stream_meta.get("track_title") or "").strip()
+        if track_title:
+            return track_title
 
-        # No real song playing -> show the clean station name
         station = self._station_name
         if station:
             return station
@@ -152,6 +151,9 @@ class BoseSoundTouchMediaPlayer(
     def _station_name(self) -> str:
         """Best-known clean station name for the current stream."""
         now_playing = self._data.get("now_playing", {})
+        stream_meta = self._stream_meta
+        if str(stream_meta.get("station_name") or "").strip():
+            return str(stream_meta.get("station_name") or "").strip()
         name = (
             str(now_playing.get("station_name") or "").strip()
             or str(now_playing.get("item_name") or "").strip()
@@ -181,6 +183,12 @@ class BoseSoundTouchMediaPlayer(
         'RADIO BOB - Rock Hits'). That is branding, not a song, so we must not
         split it into a fake artist/title. Returns ('', '') in that case.
         """
+        stream_meta = self._stream_meta
+        track_artist = str(stream_meta.get("track_artist") or "").strip()
+        track_title = str(stream_meta.get("track_title") or "").strip()
+        if track_title:
+            return track_artist, track_title
+
         icy = self._data.get("icy_meta", {})
         stream_title = str(icy.get("stream_title") or "").strip()
         if not stream_title:
@@ -212,8 +220,8 @@ class BoseSoundTouchMediaPlayer(
     def media_album_name(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
         # When a real song is playing, show the station name as the "album"
-        song_artist, _ = self._real_song
-        if song_artist:
+        _, song_title = self._real_song
+        if song_title:
             station = self._station_name
             if station:
                 return station
@@ -227,12 +235,17 @@ class BoseSoundTouchMediaPlayer(
     def media_image_url(self) -> str | None:
         now_playing = self._data.get("now_playing", {})
         current_preset = self._current_preset
+        stream_meta = self._stream_meta
+
+        track_image = str(stream_meta.get("track_image") or "").strip()
+        if track_image:
+            return track_image
 
         # Station logo (radio.net) / favicon, cached in coordinator by stream URL
         location = str(now_playing.get("location") or "").strip()
-        cached_favicon = ""
+        cached_favicon = str(stream_meta.get("station_logo") or "").strip()
         if location:
-            cached_favicon = self.coordinator.get_station_meta(location).get("favicon", "")
+            cached_favicon = cached_favicon or self.coordinator.get_station_meta(location).get("favicon", "")
 
         # For UPNP radio, the cached logo is the best source — Bose only echoes back
         # the (possibly older/plainer) art we sent it via DIDL.
@@ -278,11 +291,17 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def media_track(self) -> str | None:
+        _, song_title = self._real_song
+        if song_title:
+            return song_title
         now_playing = self._data.get("now_playing", {})
         return str(now_playing.get("track") or "").strip() or None
 
     @property
     def media_channel(self) -> str | None:
+        station_name = self._station_name
+        if station_name:
+            return station_name
         now_playing = self._data.get("now_playing", {})
         return (
             str(now_playing.get("station_name") or "")
@@ -310,11 +329,21 @@ class BoseSoundTouchMediaPlayer(
 
     @property
     def _has_rich_now_playing_metadata(self) -> bool:
+        stream_meta = self._stream_meta
+        if any(
+            str(stream_meta.get(field) or "").strip()
+            for field in ("track_title", "track_artist", "station_name")
+        ):
+            return True
         now_playing = self._data.get("now_playing", {})
         return any(
             str(now_playing.get(field) or "").strip()
             for field in ("track", "item_name", "artist", "album", "station_name", "description")
         )
+
+    @property
+    def _stream_meta(self) -> dict[str, Any]:
+        return dict(self._data.get("stream_meta", {}))
 
     def _target_player_attr(self, attr_name: str) -> str | None:
         target_entity_id = str(self.coordinator.device.get(CONF_MA_PLAYER) or "").strip()
@@ -353,6 +382,13 @@ class BoseSoundTouchMediaPlayer(
             "source_type": now_playing.get("source_type"),
             "station_name": self._station_name or None,
             "track": now_playing.get("track"),
+            "stream_title": self._stream_meta.get("stream_title"),
+            "track_artist": self._stream_meta.get("track_artist"),
+            "track_title": self._stream_meta.get("track_title"),
+            "track_image": self._stream_meta.get("track_image"),
+            "title_classification": self._stream_meta.get("title_classification"),
+            "title_decision_reason": self._stream_meta.get("title_decision_reason"),
+            "is_station_branding": self._stream_meta.get("is_station_branding"),
             "description": now_playing.get("description"),
             "location": now_playing.get("location"),
             "play_status": now_playing.get("play_status"),

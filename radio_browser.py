@@ -20,6 +20,7 @@ _RADIO_BROWSER_HOSTS = [
 
 # In-memory cache: url → {"name": str, "favicon": str}
 _station_cache: dict[str, dict[str, str]] = {}
+_track_art_cache: dict[tuple[str, str], str] = {}
 
 
 # ---------------------------------------------------------------------------
@@ -253,3 +254,61 @@ def parse_icy_stream_title(stream_title: str) -> tuple[str, str]:
         artist, _, title = stream_title.partition(" - ")
         return artist.strip(), title.strip()
     return "", stream_title
+
+
+async def async_lookup_track_art(hass: HomeAssistant, *, artist: str, title: str) -> str:
+    """Best-effort cover art lookup for a parsed Artist/Title pair."""
+    artist = str(artist or "").strip()
+    title = str(title or "").strip()
+    if not title:
+        return ""
+
+    cache_key = (artist.casefold(), title.casefold())
+    if cache_key in _track_art_cache:
+        return _track_art_cache[cache_key]
+
+    session = async_get_clientsession(hass)
+    query = f"{artist} {title}".strip()
+    artwork = ""
+    try:
+        async with session.get(
+            "https://itunes.apple.com/search",
+            params={"term": query, "entity": "song", "limit": "5"},
+            headers={"User-Agent": "bose_preset_router/homeassistant"},
+            timeout=aiohttp.ClientTimeout(total=5),
+        ) as resp:
+            if resp.status == 200:
+                data = await resp.json()
+                artwork = _pick_itunes_artwork(data.get("results", []), artist=artist, title=title)
+    except Exception as err:
+        _LOGGER.debug("Track art lookup failed for %r / %r: %s", artist, title, err)
+
+    _track_art_cache[cache_key] = artwork
+    return artwork
+
+
+def _pick_itunes_artwork(results: list[dict[str, object]], *, artist: str, title: str) -> str:
+    expected_artist = _normalize_track_value(artist)
+    expected_title = _normalize_track_value(title)
+
+    for result in results:
+        candidate_title = _normalize_track_value(str(result.get("trackName") or ""))
+        candidate_artist = _normalize_track_value(str(result.get("artistName") or ""))
+        if candidate_title != expected_title:
+            continue
+        if expected_artist and candidate_artist and candidate_artist != expected_artist:
+            continue
+        artwork = str(
+            result.get("artworkUrl512")
+            or result.get("artworkUrl100")
+            or result.get("artworkUrl60")
+            or ""
+        ).strip()
+        if artwork:
+            return artwork.replace("100x100bb", "512x512bb").replace("60x60bb", "512x512bb")
+
+    return ""
+
+
+def _normalize_track_value(value: str) -> str:
+    return re.sub(r"\s+", " ", re.sub(r"[^\w]+", " ", value.lower())).strip()

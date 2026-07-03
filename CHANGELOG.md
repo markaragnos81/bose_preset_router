@@ -6,7 +6,14 @@ The format is based on Keep a Changelog, and this project follows Semantic Versi
 
 ## [Unreleased]
 
-- No unreleased changes yet.
+### Changed
+
+- Radio-Metadaten laufen jetzt ueber einen eigenen laufenden Stream-Tracker statt nur ueber punktuelle ICY-Abfragen beim Polling. Das trennt Senderdaten sauberer von Trackdaten und aktualisiert Titelwechsel robuster.
+
+### Added
+
+- Best-effort Cover-Art-Anreicherung fuer echte `Artist - Title`-Treffer aus ICY-Metadaten.
+- Zusaeztliche Diagnose-Attribute am `media_player` fuer die StreamTitle-Klassifikation (`title_classification`, `title_decision_reason`, `is_station_branding`), damit problematische Sender leichter live analysiert werden koennen.
 
 ## [0.6.16] - 2026-06-28
 
