@@ -24,6 +24,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from typing import Callable
 
 import pyatv
 from pyatv.const import Protocol
@@ -173,6 +174,30 @@ class AirPlayPlayer:
         self._discovery = discovery
         self._atv: AppleTV | None = None
         self._stream_task: asyncio.Task | None = None
+        self._on_ended: Callable[[], None] | None = None
+
+    @property
+    def is_playing(self) -> bool:
+        """Whether our own stream task is still alive (verified, not assumed).
+
+        This is the one thing we can check directly rather than trust: Bose's own
+        now_playing has proven unreliable for AirPlay (stale/slow to transition),
+        and "we once asked to play X" can go stale too if the RAOP session dies in
+        the background (observed: "connection was lost" errors). Callers should
+        gate any "this preset is currently playing" claim on this being True.
+        """
+        return self._stream_task is not None and not self._stream_task.done()
+
+    def set_on_ended(self, callback: Callable[[], None] | None) -> None:
+        """Register a callback fired when the stream ends on its own (error or EOF).
+
+        Not called when the stream is stopped intentionally via stop() (the caller
+        that initiated the stop already knows and handles its own state update) —
+        only for the "found out from a dead connection" case, so state like
+        active_preset can be corrected promptly instead of staying stale until the
+        next poll cycle happens to notice.
+        """
+        self._on_ended = callback
 
     async def play(
         self,
@@ -220,7 +245,7 @@ class AirPlayPlayer:
 
         metadata = MediaMetadata(
             title=title or "Stream",
-            artist=artist or "Bose Preset Router",
+            artist=artist,
             album=album or "AirPlay",
         )
 
@@ -232,9 +257,16 @@ class AirPlayPlayer:
             except Exception as err:
                 _LOGGER.warning("AirPlay: stream_file error for %s: %s", self.bose_ip, err)
 
+        def _on_task_done(task: asyncio.Task) -> None:
+            if task.cancelled():
+                return
+            if self._on_ended is not None:
+                self._on_ended()
+
         self._stream_task = self.hass.async_create_task(
             _run_stream(), name=f"{DOMAIN}_airplay_stream_{self.bose_ip}"
         )
+        self._stream_task.add_done_callback(_on_task_done)
         return True
 
     async def stop(self) -> None:

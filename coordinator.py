@@ -32,6 +32,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.subentry_id = subentry_id
         self.device = device
         self.active_preset: int | None = None
+        self.active_stream_url: str | None = None
         self._station_meta: dict[str, dict[str, str]] = {}
         self._last_icy_location: str = ""
         self.api = BoseSoundTouchApi(
@@ -40,6 +41,7 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             device_name=device[CONF_NAME],
         )
         self.airplay_player = AirPlayPlayer(hass, device[CONF_BOSE_IP], airplay_discovery)
+        self.airplay_player.set_on_ended(self._on_airplay_ended)
         self.airplay_resume_store = airplay_resume_store
 
         super().__init__(
@@ -66,6 +68,35 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         info = self.data.get("info", {}) if self.data else {}
         return str(info.get("device_id") or self.bose_ip)
 
+    def _on_airplay_ended(self) -> None:
+        """Fired (sync, from a task done-callback) when our own RAOP stream dies
+
+        on its own — not via an intentional stop()/replace via play(). Bose's own
+        now_playing has proven unreliable/stale for AirPlay, so we can't count on
+        it to ever reflect this; correct our own state immediately instead of
+        waiting for the next poll to notice a mismatch.
+        """
+        self.active_preset = None
+        self.active_stream_url = None
+        if self.data is not None:
+            self.hass.async_create_task(self._async_refresh_after_airplay_ended())
+
+    async def _async_refresh_after_airplay_ended(self) -> None:
+        try:
+            await self.async_request_refresh()
+        except Exception as err:
+            _LOGGER.debug("AirPlay ended: refresh failed for %s: %s", self.device_name, err)
+
+    def _resolve_icy_url(self, now_playing: dict[str, Any]) -> str:
+        location = str(now_playing.get("location") or "").strip()
+        if location:
+            return location
+        # AirPlay's ContentItem never carries a location — we are the streamer,
+        # so fall back to the URL we ourselves pushed via pyatv.
+        if str(now_playing.get("source") or "").upper() == "AIRPLAY" and self.active_stream_url:
+            return self.active_stream_url
+        return ""
+
     async def push_now_playing(self, now_playing: dict[str, Any]) -> None:
         """Called by router when a nowPlayingUpdated WS event arrives."""
         if not self.data:
@@ -73,8 +104,9 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         merged = dict(self.data)
         merged["now_playing"] = now_playing
 
-        location = str(now_playing.get("location") or "").strip()
-        if str(now_playing.get("source") or "").upper() in {"UPNP", "AIRPLAY"} and location:
+        source = str(now_playing.get("source") or "").upper()
+        location = self._resolve_icy_url(now_playing)
+        if source in {"UPNP", "AIRPLAY"} and location:
             if location not in self._station_meta:
                 await self._async_resolve_station_meta(location)
             icy = await async_fetch_icy_meta(self.hass, location)
@@ -101,15 +133,19 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
 
         # ICY metadata fetch (fallback when WS is not connected or for initial load)
         now_playing = snapshot.get("now_playing", {})
-        if str(now_playing.get("source") or "").upper() in {"UPNP", "AIRPLAY"}:
-            location = str(now_playing.get("location") or "").strip()
-            if location:
-                icy = await async_fetch_icy_meta(self.hass, location)
-                snapshot["icy_meta"] = icy
-            else:
-                snapshot["icy_meta"] = {}
+        source = str(now_playing.get("source") or "").upper()
+        location = self._resolve_icy_url(now_playing)
+        if source in {"UPNP", "AIRPLAY"} and location:
+            icy = await async_fetch_icy_meta(self.hass, location)
+            snapshot["icy_meta"] = icy
         else:
             snapshot["icy_meta"] = {}
+
+        # Cross-check: if we believe AirPlay is active but our own stream task
+        # has actually died, don't keep reporting a preset that isn't playing.
+        if source == "AIRPLAY" and self.active_preset is not None and not self.airplay_player.is_playing:
+            self.active_preset = None
+            self.active_stream_url = None
 
         return snapshot
 

@@ -775,7 +775,6 @@ class BosePresetRouterManager:
                 started = await coordinator.airplay_player.play(
                     stream_url,
                     title=meta.get("name", "") or (item_name or ""),
-                    artist="Bose Preset Router",
                     album=meta.get("name", "") or "AirPlay",
                     volume_percent=volume_percent,
                 )
@@ -788,6 +787,7 @@ class BosePresetRouterManager:
                 # preset we just started directly — router.py is the one source of truth
                 # for what it told the speaker to play.
                 coordinator.active_preset = preset
+                coordinator.active_stream_url = stream_url
                 if coordinator.data is not None:
                     coordinator.async_set_updated_data(coordinator.data)
 

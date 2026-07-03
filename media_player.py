@@ -158,8 +158,16 @@ class BoseSoundTouchMediaPlayer(
         )
         if not name:
             location = str(now_playing.get("location") or "").strip()
+            if not location:
+                # AirPlay's ContentItem never carries a location — fall back to
+                # the URL we ourselves pushed via pyatv, if we're the one streaming.
+                location = str(self.coordinator.active_stream_url or "").strip()
             if location:
                 name = self.coordinator.get_station_meta(location).get("name", "")
+        if not name:
+            # The one field Bose reliably echoes back for AirPlay sessions is the
+            # track title we pushed via pyatv's MediaMetadata.
+            name = str(now_playing.get("track") or "").strip()
         if not name:
             icy = self._data.get("icy_meta", {})
             name = str(icy.get("icy_name") or "").strip()
@@ -396,10 +404,16 @@ class BoseSoundTouchMediaPlayer(
         current_source = str(now_playing.get("source") or "")
 
         # AirPlay's ContentItem carries no location/item_name to reverse-match
-        # against stored presets (unlike UPnP's provisioned ContentItem) — router.py
-        # records which preset it started playing on coordinator.active_preset, so
-        # use that directly instead of trying to infer it from now_playing.
-        if current_source.upper() == "AIRPLAY" and self.coordinator.active_preset is not None:
+        # against stored presets (unlike UPnP's provisioned ContentItem), and
+        # Bose's own now_playing.source has proven stale/unreliable during an
+        # AirPlay transition (observed showing "UPNP" or a stale prior preset
+        # while the correct AirPlay audio was genuinely playing). We are the
+        # streamer for AirPlay, so trust our own verified state instead: only
+        # if the RAOP stream task we started is actually still alive right now
+        # (not just "we once asked to play X", which could be stale if the
+        # stream silently died — coordinator.airplay_player.is_playing checks
+        # the live asyncio.Task, not a static flag).
+        if self.coordinator.active_preset is not None and self.coordinator.airplay_player.is_playing:
             for preset in self._presets:
                 if preset.get("id") == self.coordinator.active_preset:
                     return preset
