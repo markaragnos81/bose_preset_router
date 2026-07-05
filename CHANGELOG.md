@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.12] - 2026-07-05
+
+### Fixed
+
+- Ein Geraet, das ausserhalb von Home Assistant ausgeschaltet wurde (Bose-App, physische Taste), wurde nach einem HA-Neustart faelschlich per AirPlay-Resume wieder eingeschaltet, weil `async_resume_airplay_devices()` blind auf den zuletzt gespeicherten Preset vertraute, ohne den tatsaechlichen Standby-Status des Geraets zu pruefen. Vor dem Resume wird jetzt der echte Bose-Status abgefragt; steht das Geraet auf STANDBY, wird der Resume uebersprungen und der veraltete Eintrag geloescht.
+
 ## [0.7.11] - 2026-07-03
 
 ### Fixed

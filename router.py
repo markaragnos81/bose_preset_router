@@ -525,6 +525,27 @@ class BosePresetRouterManager:
             preset = coordinator.airplay_resume_store.get(bose_ip)
             if preset is None:
                 continue
+
+            # The resume store only gets cleared when the device is turned off
+            # through this integration's own controls (_async_stop_airplay_if_active).
+            # If the user powered it off another way (Bose app, physical button),
+            # the stale "was playing preset N" entry survives and would otherwise
+            # turn a device back on that was deliberately left off. Check the
+            # speaker's actual current power state before resuming.
+            current_state = await self._async_fetch_bose_now_playing(bose_ip)
+            current_source = str((current_state or {}).get("source") or "").upper()
+            if current_source in {"STANDBY", ""}:
+                _LOGGER.info(
+                    "Skipping AirPlay resume for device=%s (currently in standby; was turned off "
+                    "outside Home Assistant since last stored as playing preset %s)",
+                    device[CONF_NAME], preset,
+                )
+                try:
+                    await coordinator.airplay_resume_store.async_clear(bose_ip)
+                except Exception:
+                    pass
+                continue
+
             _LOGGER.info(
                 "Resuming AirPlay preset %s for device=%s after restart", preset, device[CONF_NAME]
             )
