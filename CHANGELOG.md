@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.13] - 2026-07-05
+
+### Fixed
+
+- Home Assistant meldete einen blockierenden Aufruf im Event-Loop aus `airplay.py` (`AirPlay: ... stream_file`). Ursache ist ein internes, synchrones `time.sleep(0.1)` in pyatvs RAOP-Icecast-Reader, das nicht ueber unseren eigenen Code steuerbar ist. Die komplette pyatv-Verbindungs-/Stream-Lebensdauer laeuft jetzt in einem dedizierten Hintergrund-Thread mit eigenem Event-Loop, vollstaendig isoliert vom Haupt-Loop von Home Assistant, damit dieses blockierende Verhalten HA nicht mehr betrifft. Das oeffentliche Interface von `AirPlayPlayer` (play/stop/is_playing/set_on_ended) ist unveraendert.
+
 ## [0.7.12] - 2026-07-05
 
 ### Fixed
