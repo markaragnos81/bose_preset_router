@@ -16,7 +16,8 @@ async def async_setup_entry(
 ) -> None:
     entry_data = hass.data[entry.domain][entry.entry_id]
     coordinators: dict[str, BoseSoundTouchCoordinator] = entry_data[DATA_COORDINATORS]
-    async_add_entities(
-        BosePresetSelect(coordinator_id, coordinator)
-        for coordinator_id, coordinator in coordinators.items()
-    )
+    for coordinator_id, coordinator in coordinators.items():
+        async_add_entities(
+            [BosePresetSelect(coordinator_id, coordinator)],
+            config_subentry_id=coordinator_id,
+        )

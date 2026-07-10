@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.15] - 2026-07-10
+
+### Fixed
+
+- Jedes Bose-Geraet erschien doppelt in Einstellungen > Geraete: einmal korrekt unter seinem Config-Untereintrag, einmal zusaetzlich unter "Geraete, die nicht zu einem Untereintrag gehoeren". Ursache: `media_player.py` und `select.py` haben alle Entities in einem einzigen `async_add_entities(...)`-Aufruf ohne `config_subentry_id` hinzugefuegt, wodurch HA sie nur mit dem Config-Entry als Ganzes statt mit dem jeweiligen Geraete-Untereintrag verknuepft hat. Entities werden jetzt pro Coordinator einzeln mit dem passenden `config_subentry_id` hinzugefuegt. Bereits bestehende doppelte "kein Untereintrag"-Eintraege aus frueheren Starts muessen einmalig manuell in Einstellungen > Geraete geloescht werden (Klick auf das Geraet unter "Geraete, die nicht zu einem Untereintrag gehoeren" > Loeschen) -- das automatisierte Fix verhindert nur neue Duplikate.
+
 ## [0.7.14] - 2026-07-10
 
 ### Fixed
