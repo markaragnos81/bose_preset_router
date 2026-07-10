@@ -335,7 +335,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     for coordinator in coordinators.values():
         info = coordinator.data.get("info", {}) if coordinator.data else {}
         model = str(info.get("type") or "") or None
-        device_registry.async_get_or_create(
+        device_entry = device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             config_subentry_id=coordinator.subentry_id,
             identifiers={(entry.domain, coordinator.registry_identifier)},
@@ -344,6 +344,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             model=model,
             name=coordinator.device_name,
         )
+
+        # Pre-v0.7.15 releases added entities without config_subentry_id, which
+        # left every device with a stray "no subentry" association alongside
+        # the correct one under this same config entry — showing each speaker
+        # twice in Settings > Devices. Entities are now always added with the
+        # right subentry, so drop the stale None association if still present.
+        subentries_for_entry = device_entry.config_entries_subentries.get(entry.entry_id, set())
+        if None in subentries_for_entry and len(subentries_for_entry) > 1:
+            device_registry.async_update_device(
+                device_entry.id,
+                remove_config_entry_id=entry.entry_id,
+                remove_config_subentry_id=None,
+            )
 
     _async_cleanup_stale_devices(hass, entry, coordinators)
 

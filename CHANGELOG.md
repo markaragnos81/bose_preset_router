@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.16] - 2026-07-10
+
+### Fixed
+
+- Manuelles Loeschen der doppelten "kein Untereintrag"-Geraete in Settings > Geraete schlug mit "Failed to remove device entry, rejected by integration" fehl -- korrektes HA-Verhalten, da es sich technisch nicht um zwei separate Geraete-Eintraege handelte, sondern um eine einzelne Geraete-Registrierung mit zwei Untereintrag-Zuordnungen (eine korrekte, eine veraltete "kein Untereintrag"-Zuordnung aus Vor-v0.7.15-Starts). Setup entfernt jetzt automatisch die veraltete None-Untereintrag-Zuordnung, sobald die korrekte vorhanden ist -- kein manuelles Loeschen mehr noetig, die doppelte Anzeige verschwindet von selbst nach dem naechsten Neustart.
+
 ## [0.7.15] - 2026-07-10
 
 ### Fixed
