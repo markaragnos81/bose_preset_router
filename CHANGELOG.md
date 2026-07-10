@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.14] - 2026-07-10
+
+### Fixed
+
+- Ein ueber die HA-Geraeteseite deaktiviertes Bose-Geraet wurde weiterhin unbegrenzt per HTTP gepollt und per WebSocket verbunden, was fortlaufend Verbindungsfehler ins Log schrieb (z.B. "Cannot connect to host ..."). Deaktivierte Geraete (device_registry disabled_by gesetzt) werden jetzt beim Setup uebersprungen: kein Coordinator-Polling, keine WebSocket-Verbindungsversuche mehr. Betrifft nur den Start; ein reaktiviertes Geraet braucht wie ueblich einen Reload/Neustart, um wieder aufgenommen zu werden.
+
 ## [0.7.13] - 2026-07-05
 
 ### Fixed

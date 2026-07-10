@@ -316,10 +316,22 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if subentry.subentry_type == "device"
     }
 
+    device_registry = dr.async_get(hass)
     for coordinator in coordinators.values():
+        # A user-disabled device (via the HA device page) should not keep being
+        # polled and logging connection-failure errors forever — respect that
+        # instead of blindly hammering a speaker the user has taken offline.
+        device_entry = device_registry.async_get_device(
+            identifiers={(entry.domain, coordinator.registry_identifier)}
+        )
+        if device_entry is not None and device_entry.disabled_by is not None:
+            _LOGGER.info(
+                "Skipping startup polling for %s (%s): device is disabled",
+                coordinator.device_name, coordinator.bose_ip,
+            )
+            continue
         await coordinator.async_start()
 
-    device_registry = dr.async_get(hass)
     for coordinator in coordinators.values():
         info = coordinator.data.get("info", {}) if coordinator.data else {}
         model = str(info.get("type") or "") or None

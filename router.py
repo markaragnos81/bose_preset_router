@@ -13,6 +13,7 @@ from homeassistant.components import persistent_notification
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers import device_registry as dr
 
 from .api import BoseSoundTouchApi
 from .const import (
@@ -492,8 +493,25 @@ class BosePresetRouterManager:
         self._stop_event.clear()
         self._tasks.clear()
 
-        for device in self.devices:
+        device_registry = dr.async_get(self.hass)
+        for subentry_id, subentry in self.entry.subentries.items():
+            if subentry.subentry_type != "device":
+                continue
+            device = subentry.data
             name = device[CONF_NAME]
+
+            # A user-disabled device (via the HA device page) should not keep
+            # spamming connection-failure logs forever — respect that instead
+            # of blindly reconnecting to a speaker the user has taken offline.
+            device_entry = device_registry.async_get_device(
+                identifiers={(DOMAIN, f"subentry:{subentry_id}")}
+            )
+            if device_entry is not None and device_entry.disabled_by is not None:
+                _LOGGER.info(
+                    "Skipping websocket connection for %s: device is disabled", name
+                )
+                continue
+
             task = self.entry.async_create_background_task(
                 self.hass,
                 self._device_loop(device),
