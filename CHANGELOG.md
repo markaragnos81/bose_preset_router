@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.17] - 2026-07-10
+
+### Changed
+
+- Der interne Lese-Vorlaufpuffer von pyatvs RAOP-Streaming (fest auf 64KB / ~2.6s einprogrammiert, siehe [postlund/pyatv#2889](https://github.com/postlund/pyatv/issues/2889)) wird beim Start jetzt auf das 4-fache (256KB / ~11s) vergroessert, um kurze Netzwerk-Haenger beim Nachladen vom Radiosender abzufedern, bevor sie zu "Too slow to keep up"-Warnungen und hoerbaren Aussetzern fuehren. Eingriff in pyatv-interne, nicht offiziell konfigurierbare Konstanten -- mit Absicherung, falls sich das in einem zukuenftigen pyatv-Update aendert.
+
 ## [0.7.16] - 2026-07-10
 
 ### Fixed

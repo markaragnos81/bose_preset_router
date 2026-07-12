@@ -41,6 +41,39 @@ from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
 
+# pyatv's HTTP/Icecast RAOP source hardcodes a 64KB read-ahead buffer
+# (~2.6s at 192kbps), not exposed via any public stream_file() parameter
+# (see https://github.com/postlund/pyatv/issues/2889, filed by this project).
+# For long-running internet radio streaming (hours, not short clips), a
+# transient network hiccup fetching from the origin server can drain that
+# buffer faster than it refills, which then cascades into pyatv's sender
+# falling behind its own real-time pacing ("Too slow to keep up" warnings)
+# and audible dropouts. We widen it here at import time, before any stream
+# starts — pyatv reads these as module-level globals at call time, so
+# patching the module attributes takes effect for every future stream.
+# Defensive: if pyatv changes this internal layout in a future release, skip
+# quietly rather than crash the integration.
+_RAOP_BUFFER_MULTIPLIER = 4
+
+
+def _patch_raop_buffer_size() -> None:
+    try:
+        from pyatv.protocols.raop import audio_source as _raop_audio_source
+
+        original_buffer = _raop_audio_source.BUFFER_SIZE
+        original_headroom = _raop_audio_source.HEADROOM_SIZE
+        _raop_audio_source.BUFFER_SIZE = original_buffer * _RAOP_BUFFER_MULTIPLIER
+        _raop_audio_source.HEADROOM_SIZE = original_headroom * _RAOP_BUFFER_MULTIPLIER
+        _LOGGER.info(
+            "AirPlay: widened pyatv RAOP read-ahead buffer %d KB -> %d KB",
+            original_buffer // 1024, _raop_audio_source.BUFFER_SIZE // 1024,
+        )
+    except Exception as err:
+        _LOGGER.debug("AirPlay: could not widen pyatv RAOP buffer (skipping): %s", err)
+
+
+_patch_raop_buffer_size()
+
 DEFAULT_SCAN_INTERVAL_SECONDS = 20.0
 DEFAULT_CACHE_MAX_AGE_SECONDS = 45.0
 DEFAULT_SCAN_TIMEOUT_SECONDS = 6
