@@ -20,7 +20,7 @@ from .const import (
     preset_name_key,
     preset_url_key,
 )
-from .radio_browser import async_lookup_radio_logo, async_lookup_station
+from .radio_browser import async_fetch_icy_meta, async_lookup_radio_logo, async_lookup_station
 from .stream_metadata import StreamMetadataTracker
 
 _LOGGER = logging.getLogger(__name__)
@@ -201,7 +201,18 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if name_override:
             meta["name"] = name_override
         elif not meta.get("name"):
-            meta["name"] = self._station_name_from_url(url)
+            # Radio Browser matches by exact URL, so it can't identify a
+            # station behind a private/local URL (e.g. a caching reverse
+            # proxy). Try the stream's own live ICY icy-name before falling
+            # back to a name derived from the URL's hostname — a quick,
+            # bounded fetch (a few KB, not the whole stream).
+            icy_name = ""
+            try:
+                icy = await async_fetch_icy_meta(self.hass, url)
+                icy_name = str(icy.get("icy_name") or "").strip()
+            except Exception as err:
+                _LOGGER.debug("ICY name lookup failed for %s: %s", url, err)
+            meta["name"] = icy_name or self._station_name_from_url(url)
 
         # Prefer a high-res radio.net station logo (matched by stream URL) over the
         # plain favicon. Only overrides when an exact URL match is found.

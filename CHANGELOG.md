@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.19] - 2026-08-26
+
+### Added
+
+- Automatischer Fallback auf den echten ICY `icy-name` des Streams, wenn Radio Browser die URL nicht kennt (z.B. bei einem privaten Caching-Proxy) -- statt direkt auf einen aus dem Hostnamen abgeleiteten Platzhalternamen ("Stream1") zurueckzufallen. Deutlich komfortabler als das manuelle Namensfeld aus v0.7.18: funktioniert automatisch fuer jede unbekannte URL, solange der Stream selbst einen icy-name sendet. Das manuelle Namensfeld bleibt als Override fuer Ausnahmefaelle bestehen, hat aber weiterhin Vorrang, falls gesetzt.
+
 ## [0.7.18] - 2026-08-26
 
 ### Added
