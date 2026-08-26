@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.22] - 2026-08-26
+
+### Fixed
+
+- ICY-Metadaten wurden per Einzel-Snapshot direkt nach dem Connect gelesen -- traf dieser Moment auf einen Jingle/Ansage/Werbeblock statt auf den laufenden Song, wurde faelschlich "keine Songdaten" angenommen, obwohl der Sender durchaus echte Titel sendet (live an RadioBob verifiziert: wiederholte Einzel-Reads landeten konsequent auf Branding-Text, waehrend ein paar Sekunden Mithoeren einen echten Artist/Titel-Wechsel einfing, z.B. "AC/DC - Back In Black"). Liest jetzt bis zu 6s lang mehrere Metadaten-Bloecke und behaelt den zuletzt gesehenen echten Titel.
+- `StreamTitle='([^']*)'` brach bei Titeln mit Apostroph am ersten `'` ab, z.B. wurde "Lynyrd Skynyrd - What's Your Name" zu "What" abgeschnitten. Auf `StreamTitle='(.*?)';` umgestellt (matcht bis zum tatsaechlichen `';`-Ende, selbes Muster wie Music Assistant), sodass ein Apostroph im Titel nicht mehr trunkiert.
+
 ## [0.7.21] - 2026-08-26
 
 ### Fixed
