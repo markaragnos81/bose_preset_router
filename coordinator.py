@@ -198,6 +198,13 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         meta = await async_lookup_station(self.hass, url)
         if not meta:
             meta = {"name": "", "favicon": ""}
+
+        # Only True when neither Radio Browser nor a live ICY fetch could name
+        # this station (e.g. the stream was briefly unreachable at startup —
+        # observed with a local reverse proxy not yet active when HA booted).
+        # That placeholder must not be cached permanently, or this URL would
+        # be stuck showing it forever until the next full HA restart.
+        used_hostname_fallback = False
         if name_override:
             meta["name"] = name_override
         elif not meta.get("name"):
@@ -212,7 +219,11 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 icy_name = str(icy.get("icy_name") or "").strip()
             except Exception as err:
                 _LOGGER.debug("ICY name lookup failed for %s: %s", url, err)
-            meta["name"] = icy_name or self._station_name_from_url(url)
+            if icy_name:
+                meta["name"] = icy_name
+            else:
+                meta["name"] = self._station_name_from_url(url)
+                used_hostname_fallback = True
 
         # Prefer a high-res radio.net station logo (matched by stream URL) over the
         # plain favicon. Only overrides when an exact URL match is found.
@@ -224,7 +235,8 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         if logo:
             meta["favicon"] = logo
 
-        self._station_meta[url] = meta
+        if not used_hostname_fallback:
+            self._station_meta[url] = meta
         return meta
 
     async def _async_sync_stream_metadata(

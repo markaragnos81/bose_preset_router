@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.20] - 2026-08-26
+
+### Fixed
+
+- Wenn beim HA-Start weder Radio Browser noch ein live-ICY-Fetch einen Sendernamen fuer eine URL ermitteln konnten (z.B. weil ein privater Proxy zu diesem Zeitpunkt noch nicht erreichbar war), wurde der aus dem Hostnamen abgeleitete Platzhaltername ("Stream2" etc.) dauerhaft im Speicher gecacht -- auch nachdem der Proxy spaeter erreichbar wurde, blieb der Platzhalter bis zum naechsten vollen HA-Neustart bestehen. Dieser Fallback wird jetzt nicht mehr dauerhaft gecacht, sodass der naechste Aufloseversuch (z.B. der naechste periodische Stream-Metadaten-Refresh waehrend der Wiedergabe, alle 15s) automatisch neu versucht und sich selbst korrigiert, sobald die Quelle erreichbar ist.
+
 ## [0.7.19] - 2026-08-26
 
 ### Added
