@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.23] - 2026-08-26
+
+### Fixed
+
+- Deutsche Sender-Durchsagen wurden als echte Songs fehlinterpretiert. "RADIO 21 - Werbung" (Werbeblock) wurde live als Artist "RADIO 21" / Titel "Werbung" akzeptiert, da die Erkennung generischer Durchsagen nur englische Begriffe kannte (advert, jingle, ...). Deutsche Äquivalente (werbung, nachrichten, verkehrsfunk, verkehrsmeldung) ergänzt.
+- Radio21 rotiert mehrere Branding-Zeilen durch StreamTitle (z.B. "Radio 21 - bester ROCK 'N POP"), die alle mit dem Sender-Rufnamen beginnen, aber nie exakt dem vollen Stationsnamen entsprechen -- der reine Gleichheitsvergleich hat das nicht erkannt. Prüft jetzt zusätzlich, ob der Stationsname mit dem erkannten Artist-Namen beginnt (Präfix-Match), nicht nur auf exakte Übereinstimmung.
+
 ## [0.7.22] - 2026-08-26
 
 ### Fixed

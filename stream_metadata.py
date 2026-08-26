@@ -221,7 +221,13 @@ def _classify_stream_title(
 
     if any(
         token in normalized_stream
-        for token in ("listen live", "on air", "webradio", "unknown", "advert", "jingle")
+        for token in (
+            "listen live", "on air", "webradio", "unknown", "advert", "jingle",
+            # German equivalents — confirmed live: "RADIO 21 - Werbung" (ad break)
+            # was parsed as artist="RADIO 21" title="Werbung" and accepted as a
+            # real track since none of the English-only markers matched it.
+            "werbung", "nachrichten", "verkehrsfunk", "verkehrsmeldung",
+        )
     ):
         return False, "contains_generic_broadcast_phrase"
 
@@ -241,6 +247,13 @@ def _classify_stream_title(
             return False, "title_equals_station_name"
         if normalized_artist and normalized_artist == normalized_candidate:
             return False, "artist_equals_station_name"
+        # Station callsign as a prefix, not just an exact match — confirmed
+        # live: Radio21 rotates several branding lines ("Radio 21 - bester
+        # ROCK 'N POP", "RADIO 21 - Werbung", ...) all starting with "Radio
+        # 21", none of which equal the full station_name "RADIO 21 -
+        # Göttingen" exactly, so the equality check above missed them.
+        if normalized_artist and len(normalized_artist) >= 3 and normalized_candidate.startswith(normalized_artist):
+            return False, "artist_is_station_name_prefix"
         if _branding_remainder_is_generic(normalized_title, normalized_candidate):
             return False, "title_is_station_branding_variant"
 
