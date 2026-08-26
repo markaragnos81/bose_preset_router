@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.18] - 2026-08-26
+
+### Added
+
+- Optionales manuelles Namensfeld pro Preset in der Geräte-Konfiguration. Die automatische Radio Browser/radio.net-Erkennung matcht Sender ausschließlich per exakter Stream-URL -- bei privaten/lokalen URLs (z.B. einem eigenen Caching-Reverse-Proxy) schlägt das fehl und der Anzeigename fällt auf einen aus dem Hostnamen abgeleiteten Platzhalter zurück (z.B. "Stream1" statt "Radio21"). Ein gesetzter manueller Name überschreibt die automatische Erkennung für Titel, Preset-Label und Sendernamen konsequent überall.
+
 ## [0.7.17] - 2026-07-10
 
 ### Changed

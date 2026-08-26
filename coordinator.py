@@ -11,7 +11,15 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 
 from .airplay import AirPlayDiscovery, AirPlayPlayer, AirPlayResumeStore
 from .api import BoseSoundTouchApi
-from .const import CONF_BOSE_IP, CONF_NAME, DEFAULT_COORDINATOR_REFRESH_SECONDS, PRESET_IDS, default_preset_url_key, preset_url_key
+from .const import (
+    CONF_BOSE_IP,
+    CONF_NAME,
+    DEFAULT_COORDINATOR_REFRESH_SECONDS,
+    PRESET_IDS,
+    default_preset_url_key,
+    preset_name_key,
+    preset_url_key,
+)
 from .radio_browser import async_lookup_radio_logo, async_lookup_station
 from .stream_metadata import StreamMetadataTracker
 
@@ -35,6 +43,17 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         self.active_preset: int | None = None
         self.active_stream_url: str | None = None
         self._station_meta: dict[str, dict[str, str]] = {}
+        # Manual per-preset name overrides, keyed by stream URL. The automatic
+        # Radio Browser / radio.net lookup matches by exact stream URL, so it
+        # can't identify a station behind a private/local URL (e.g. a caching
+        # reverse proxy) — falls back to a name derived from the URL's
+        # hostname otherwise (e.g. "Stream1" instead of "Radio21").
+        self._preset_name_overrides: dict[str, str] = {
+            str(device.get(preset_url_key(preset_id)) or "").strip(): override
+            for preset_id in PRESET_IDS
+            if (override := str(device.get(preset_name_key(preset_id)) or "").strip())
+            and str(device.get(preset_url_key(preset_id)) or "").strip()
+        }
         self.api = BoseSoundTouchApi(
             hass,
             host=device[CONF_BOSE_IP],
@@ -175,10 +194,13 @@ class BoseSoundTouchCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     async def _async_resolve_station_meta(self, url: str) -> dict[str, str]:
         if url in self._station_meta:
             return self._station_meta[url]
+        name_override = self._preset_name_overrides.get(url, "")
         meta = await async_lookup_station(self.hass, url)
         if not meta:
             meta = {"name": "", "favicon": ""}
-        if not meta.get("name"):
+        if name_override:
+            meta["name"] = name_override
+        elif not meta.get("name"):
             meta["name"] = self._station_name_from_url(url)
 
         # Prefer a high-res radio.net station logo (matched by stream URL) over the

@@ -41,6 +41,7 @@ from .const import (
     SUBENTRY_TYPE_DEVICE,
     WS_PORT,
     default_preset_url_key,
+    preset_name_key,
     preset_url_key,
     preset_volume_key,
 )
@@ -252,14 +253,20 @@ def preset_defaults_toggle_schema() -> vol.Schema:
 
 
 def preset_urls_schema() -> vol.Schema:
-    return vol.Schema(
-        {
-            vol.Optional(preset_url_key(p)): selector.TextSelector(
-                selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
-            )
-            for p in PRESET_IDS
-        }
-    )
+    schema: dict = {}
+    for p in PRESET_IDS:
+        schema[vol.Optional(preset_url_key(p))] = selector.TextSelector(
+            selector.TextSelectorConfig(type=selector.TextSelectorType.URL)
+        )
+        # Optional manual display name — the automatic Radio Browser/radio.net
+        # lookup matches by exact stream URL, so it can't identify a station
+        # behind a private/local URL (e.g. a caching reverse proxy). Setting
+        # this overrides that lookup instead of falling back to a name derived
+        # from the URL's hostname.
+        schema[vol.Optional(preset_name_key(p))] = selector.TextSelector(
+            selector.TextSelectorConfig(type=selector.TextSelectorType.TEXT)
+        )
+    return vol.Schema(schema)
 
 
 def _is_valid_url(value: str) -> bool:
@@ -331,6 +338,7 @@ def _finalize_device_data(normalized_input: dict) -> dict:
     if use_defaults:
         for p in PRESET_IDS:
             final_data.pop(preset_url_key(p), None)
+            final_data.pop(preset_name_key(p), None)
     routing_mode = str(final_data.pop(ATTR_ROUTING_MODE, ROUTING_MODE_NONE) or ROUTING_MODE_NONE)
     if routing_mode == ROUTING_MODE_DIRECT:
         final_data[CONF_ROUTING_MODE] = ROUTING_MODE_DIRECT
@@ -418,6 +426,8 @@ def _preset_fields(data: dict, *, expert: bool) -> dict:
         if preset_url_key(preset) in data:
             selected[preset_url_key(preset)] = data[preset_url_key(preset)]
             has_any_url = True
+        if preset_name_key(preset) in data:
+            selected[preset_name_key(preset)] = data[preset_name_key(preset)]
     selected[CONF_USE_PRESET_DEFAULTS] = not has_any_url
     return selected
 

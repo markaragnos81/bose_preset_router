@@ -53,6 +53,10 @@ def preset_url_key(preset: int) -> str:
     return f"preset_{preset}"
 
 
+def preset_name_key(preset: int) -> str:
+    return f"preset_{preset}_name"
+
+
 def default_preset_url_key(preset: int) -> str:
     return f"default_preset_{preset}"
 
