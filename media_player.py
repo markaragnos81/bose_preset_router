@@ -148,6 +148,18 @@ class BoseSoundTouchMediaPlayer(
     def _normalize_station(value: str) -> str:
         return re.sub(r"\s+", " ", re.sub(r"[!\-–—_.,/()']", " ", value.lower())).strip()
 
+    def _effective_location(self, now_playing: dict[str, Any]) -> str | None:
+        """The stream URL actually in use, not Bose's raw (sometimes stale) echo.
+
+        Bose can keep echoing a stale ContentItem location from an earlier
+        UPnP-set preset for a while after a genuine AirPlay session has
+        already taken over — verified live. When our own RAOP stream is
+        confirmed running, prefer the URL we ourselves are pushing.
+        """
+        if self.coordinator.active_stream_url and self.coordinator.airplay_player.is_playing:
+            return self.coordinator.active_stream_url
+        return now_playing.get("location")
+
     @property
     def _station_name(self) -> str:
         """Best-known clean station name for the current stream."""
@@ -391,7 +403,7 @@ class BoseSoundTouchMediaPlayer(
             "title_decision_reason": self._stream_meta.get("title_decision_reason"),
             "is_station_branding": self._stream_meta.get("is_station_branding"),
             "description": now_playing.get("description"),
-            "location": now_playing.get("location"),
+            "location": self._effective_location(now_playing),
             "play_status": now_playing.get("play_status"),
             "device_id": info.get("device_id"),
             "model": info.get("type"),

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.7.21] - 2026-08-26
+
+### Fixed
+
+- Cover-Art-Suche (iTunes) ist vermutlich noch nie erfolgreich gelaufen: iTunes sendet `Content-Type: text/javascript` statt `application/json`, `resp.json()` ohne `content_type=None` wirft daher immer eine `ContentTypeError`, die im except-Block lautlos verschluckt wurde (nur Debug-Log). Lokal mit einem echten Treffer (Red Hot Chili Peppers - Snow ((Hey Oh))) verifiziert: nach dem Fix liefert die Suche korrekt eine 512x512-Cover-URL.
+- Das `location`-Attribut am media_player zeigte Bose's rohes, manchmal veraltetes `now_playing.location`-Feld (z.B. Preset 1 (stream1.lan) auch waehrend Preset 4 lief). Zeigt jetzt bevorzugt die tatsaechlich genutzte `active_stream_url`, wenn eine eigene AirPlay-Session verifiziert laeuft.
+
 ## [0.7.20] - 2026-08-26
 
 ### Fixed

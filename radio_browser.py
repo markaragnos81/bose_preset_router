@@ -278,7 +278,11 @@ async def async_lookup_track_art(hass: HomeAssistant, *, artist: str, title: str
             timeout=aiohttp.ClientTimeout(total=5),
         ) as resp:
             if resp.status == 200:
-                data = await resp.json()
+                # iTunes sends "Content-Type: text/javascript", not
+                # "application/json" — aiohttp's default strict content-type
+                # check rejects that and raises, silently discarding every
+                # lookup via the except block below unless disabled here.
+                data = await resp.json(content_type=None)
                 artwork = _pick_itunes_artwork(data.get("results", []), artist=artist, title=title)
     except Exception as err:
         _LOGGER.debug("Track art lookup failed for %r / %r: %s", artist, title, err)
